@@ -18,28 +18,8 @@ validators.mandatory:x:@.arguments/*/card_exp_month
 validators.mandatory:x:@.arguments/*/card_exp_year
 validators.mandatory:x:@.arguments/*/card_cvs
 
-// Retrieving username that we'll need to extract name and email.
+// Retrieving username that we'll need to create/extract customer from our internal systems.
 auth.ticket.get
-
-// Retrieving user's name and email address which we'll need to create our subscription.
-.email
-.name
-data.connect:magic
-   data.read
-      table:users_extra
-      values
-         type
-         name
-      where
-         and
-            user.eq:x:@auth.ticket.get
-            or
-               type.eq:email
-               type.eq:name
-   set-value:x:@.email
-      get-value:x:@data.read/*/*/type/=email/./*/value
-   set-value:x:@.name
-      get-value:x:@data.read/*/*/type/=name/./*/value
 
 /*
  * Opening up a database connection to our stripe database, since we want to store
@@ -47,133 +27,112 @@ data.connect:magic
  */
 data.connect:stripe
 
-   // Will contain customer-id and payment method reference from Stripe's systems.
+   // Will contain customer-id reference from Stripe's systems.
    .customer-id
-   .payment-method
    data.read
       table:customers
       values
          customer_id
-         payment_method
       where
          and
             username.eq:x:@auth.ticket.get
 
    /*
-    * Checking if we have previously create a customer object, and if so,
-    * storing the previously create customer ID.
+    * Checking if we have previously create a customer object, and if not,
+    * we create a new customer object.
     */
    if
-      and
+      not
          exists:x:@data.read/*/*
-         not
-            eq:x:@data.read/*/*/customer_id
-               .
-         not
-            eq:x:@data.read/*/*/customer_id
-               .:
       .lambda
 
-         // We have a valid customer.
-         set-value:x:@.customer-id
-            get-value:x:@data.read/*/*/customer_id
-
-         // Checking if we already have a payment method associated with client.
-         if
-            and
-               exists:x:@data.read/*/*/payment_method
-               neq:x:@data.read/*/*/payment_method
-                  .
-               neq:x:@data.read/*/*/payment_method
-                  .:
-            .lambda
-
-               // We have a valid payment method.
-               set-value:x:@.payment-method
-                  get-value:x:@data.read/*/*/payment_method
-
-         else
-
-            /*
-             * No payment method associated with user, possibly because of
-             * supplying wrong card numbers, etc. Hence, creating a new payment
-             * method with the specified data.
-             */
-            unwrap:x:+/*
-            signal:strips.payment_methods.create
-               card_number:x:@.arguments/*/card_number
-               card_exp_month:x:@.arguments/*/card_exp_month
-               card_exp_year:x:@.arguments/*/card_exp_year
-               card_cvs:x:@.arguments/*/card_cvs
-
-            // Attaching payment method with customer in Stripe.
-            unwrap:x:+/*
-            signal:strips.payment_methods.attach
-               payment_method:x:@signal/@signal
-               customer_id:x:@.customer-id
-
-            // Updating our internal database records.
-            data.update
-               table:customers
+         /*
+          * Retrieving user's name and email address which we'll need to create our
+          * customer in Stripe's system.
+          */
+         .email
+         .name
+         data.connect:magic
+            data.read
+               table:users_extra
                values
-                  payment_method:x:@signal
+                  type
+                  name
                where
                   and
-                     username.eq:x:@auth.ticket.get
-                     
-            // Making sure we can return the correct payment method to caller.
-            set-value:x:@.payment-method
-               get-value:x:@signal
+                     user.eq:x:@auth.ticket.get
+                     or
+                        type.eq:email
+                        type.eq:name
+            set-value:x:@.email
+               get-value:x:@data.read/*/*/type/=email/./*/value
+            set-value:x:@.name
+               get-value:x:@data.read/*/*/type/=name/./*/value
+
+         // We need to create a customer object.
+         unwrap:x:+/*
+         signal:stripe.customers.create
+            username:x:@auth.ticket.get
+            name:x:@.name
+            email:x:@.email
+
+         // Inserting our customer object
+         data.create
+            table:customers
+            values
+               username:x:@auth.ticket.get
+               customer_id:x:@signal
+
+         // Setting customer id.
+         set-value:x:@.customer-id
+            get-value:x:@signal
 
    else
 
-      // We need to create a customer object.
-      unwrap:x:+/*
-      signal:stripe.customers.create
-         username:x:@auth.ticket.get
-         name:x:@.name
-         email:x:@.email
-
-      // Inserting our customer object
-      data.create
-         table:customers
-         values
-            username:x:@auth.ticket.get
-            customer_id:x:@signal
-
-      // Setting customer id.
+      // We already have a customer, storing for logic further down.
       set-value:x:@.customer-id
-         get-value:x:@signal
+         get-value:x:@data.read/*/*/customer_id
 
-      // Creating a new payment method with Stripe.
-      unwrap:x:+/*
-      signal:strips.payment_methods.create
-         card_number:x:@.arguments/*/card_number
-         card_exp_month:x:@.arguments/*/card_exp_month
-         card_exp_year:x:@.arguments/*/card_exp_year
-         card_cvs:x:@.arguments/*/card_cvs
+   // Creating a new payment-method in Stripe's systems and storing a reference to it.
+   .payment-method
+   .brand
+   unwrap:x:+/*
+   signal:strips.payment_methods.create
+      card_number:x:@.arguments/*/card_number
+      card_exp_month:x:@.arguments/*/card_exp_month
+      card_exp_year:x:@.arguments/*/card_exp_year
+      card_cvs:x:@.arguments/*/card_cvs
 
-      // Attaching payment method with customer in Stripe.
-      unwrap:x:+/*
-      signal:strips.payment_methods.attach
-         payment_method:x:@signal/@signal
-         customer_id:x:@.customer-id
+   // Making sure we can store the peyment method and brand.
+   set-value:x:@.payment-method
+      get-value:x:@signal/*/id
+   set-value:x:@.brand
+      get-value:x:@signal/*/brand
 
-      // Attaching payment method to customer in our internal database.
-      data.update
-         table:customers
-         values
-            payment_method:x:@signal/@signal
-         where
-            and
-               username.eq:x:@auth.ticket.get
+   // Attaching payment method with customer in Stripe.
+   unwrap:x:+/*
+   signal:strips.payment_methods.attach
+      payment_method:x:@.payment-method
+      customer_id:x:@.customer-id
 
-      // Making sure we can return payment method to caller.
-      set-value:x:@.payment-method
-         get-value:x:@signal
+   // Creating our internal database record.
+   strings.length:x:@.arguments/*/card_number
+   math.subtract:x:-
+      .:int:4
+   strings.substring:x:@.arguments/*/card_number
+      get-value:x:@math.subtract
+      .:int:4
+   data.create
+      table:payment_methods
+      values
+         payment_method:x:@.payment-method
+         username:x:@auth.ticket.get
+         card_no:x:@strings.substring
+         card_type:x:@.brand
 
    // Returning success to caller.
-   unwrap:x:+/*/payment-method
+   unwrap:x:+/*
    return
-      result:success
       payment-method:x:@.payment-method
+      brand:x:@.brand
+      card_no:x:@strings.substring

@@ -49,4 +49,7 @@ slots.create:strips.payment_methods.create
             status:500
 
    // Returning customer ID to caller.
-   return:x:@http.post/*/content/*/id
+   unwrap:x:+/*
+   return
+      id:x:@http.post/*/content/*/id
+      brand:x:@http.post/*/content/*/card/*/brand
