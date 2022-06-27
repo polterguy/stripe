@@ -5,6 +5,7 @@
 
 .arguments
    price:string
+   payment_method:string
 .description:Creates a new subscription and associates with the currently authenticated user
 
 // Sanity checking invocation.
@@ -12,6 +13,7 @@ auth.ticket.verify:root, admin, guest
 
 // Sanity checking invocation.
 validators.mandatory:x:@.arguments/*/price
+validators.mandatory:x:@.arguments/*/payment_method
 
 // Retrieving username that we'll need to extract name and email.
 auth.ticket.get
@@ -24,45 +26,30 @@ data.connect:stripe
 
    // Will contain customer-id and payment method reference in Stripe's systems.
    .customer-id
-   .payment-method
    data.read
       table:customers
       values
          customer_id
-         payment_method
       where
          and
             username.eq:x:@auth.ticket.get
 
-   /*
-    * Checking if we have previously create a customer object, and if so,
-    * storing the previously create customer ID.
-    */
+   // Verifying we've previously created a customer, and/or payment method
    if
-      or
-         not
-            exists:x:@data.read/*/*
-         eq:x:@data.read/*/*/customer_id
-            .
-         eq:x:@data.read/*/*/customer_id
-            .:
-         eq:x:@data.read/*/*/payment_method
-            .
-         eq:x:@data.read/*/*/payment_method
-            .:
+      not
+         exists:x:@data.read/*/*
       .lambda
 
-         // Customer has previously been created.
+         // Customer has not previously been created.
          log.error:Tried to create subscription before creating a customer or payment method
             username:x:@auth.user.get
+         throw:No payment method, and/or customer created
+            public:true
+            status:401
 
-   else
-
-      // Setting customer id and payment method.
-      set-value:x:@.customer-id
-         get-value:x:@data.read/*/*/customer_id
-      set-value:x:@.payment-method
-         get-value:x:@data.read/*/*/payment_method
+   // Setting customer id and payment method.
+   set-value:x:@.customer-id
+      get-value:x:@data.read/*/*/customer_id
 
    /*
     * Now we have a customer, a payment method, and the customer and its payment method
@@ -73,7 +60,7 @@ data.connect:stripe
    unwrap:x:+/*
    signal:stripe.subscriptions.create
       customer_id:x:@.customer-id
-      payment_method:x:@.payment-method
+      payment_method:x:@.arguments/*/payment_method
       price:x:@.arguments/*/price
 
    // Returning success to caller.
