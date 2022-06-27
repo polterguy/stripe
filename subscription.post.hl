@@ -1,0 +1,81 @@
+
+/*
+ * Stripe integration allowing users to purchase a subscription type of product.
+ */
+
+.arguments
+   price:string
+.description:Creates a new subscription and associates with the currently authenticated user
+
+// Sanity checking invocation.
+auth.ticket.verify:root, admin, guest
+
+// Sanity checking invocation.
+validators.mandatory:x:@.arguments/*/price
+
+// Retrieving username that we'll need to extract name and email.
+auth.ticket.get
+
+/*
+ * Opening up a database connection to our stripe database, since we want to store
+ * values associating the username with stripe internal data as we proceed.
+ */
+data.connect:stripe
+
+   // Will contain customer-id and payment method reference in Stripe's systems.
+   .customer-id
+   .payment-method
+   data.read
+      table:customers
+      values
+         customer_id
+         payment_method
+      where
+         and
+            username.eq:x:@auth.ticket.get
+
+   /*
+    * Checking if we have previously create a customer object, and if so,
+    * storing the previously create customer ID.
+    */
+   if
+      or
+         not
+            exists:x:@data.read/*/*
+         eq:x:@data.read/*/*/customer_id
+            .
+         eq:x:@data.read/*/*/customer_id
+            .:
+         eq:x:@data.read/*/*/payment_method
+            .
+         eq:x:@data.read/*/*/payment_method
+            .:
+      .lambda
+
+         // Customer has previously been created.
+         log.error:Tried to create subscription before creating a customer or payment method
+            username:x:@auth.user.get
+
+   else
+
+      // Setting customer id and payment method.
+      set-value:x:@.customer-id
+         get-value:x:@data.read/*/*/customer_id
+      set-value:x:@.payment-method
+         get-value:x:@data.read/*/*/payment_method
+
+   /*
+    * Now we have a customer, a payment method, and the customer and its payment method
+    * are associated with each other internally in our database, and in Stripe's systems.
+    *
+    * Hence, now we can create our subscription.
+    */
+   unwrap:x:+/*
+   signal:stripe.subscriptions.create
+      customer_id:x:@.customer-id
+      payment_method:x:@.payment-method
+      price:x:@.arguments/*/price
+
+   // Returning success to caller.
+   return
+      result:success

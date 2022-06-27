@@ -2,13 +2,12 @@
 /*
  * Stripe integration allowing users to purchase a subscription type of product.
  */
-
 .arguments
    card_number:string
    card_exp_month:string
    card_exp_year:string
    card_cvs:string
-   price:string
+.description:Creates a new payment method and associates with the currently authenticated user
 
 // Sanity checking invocation.
 auth.ticket.verify:root, admin, guest
@@ -48,7 +47,7 @@ data.connect:magic
  */
 data.connect:stripe
 
-   // Will contain customer-id and payment method reference in Stripe's systems.
+   // Will contain customer-id and payment method reference from Stripe's systems.
    .customer-id
    .payment-method
    data.read
@@ -75,7 +74,7 @@ data.connect:stripe
                .:
       .lambda
 
-         // Customer has previously been created.
+         // We have a valid customer.
          set-value:x:@.customer-id
             get-value:x:@data.read/*/*/customer_id
 
@@ -88,18 +87,20 @@ data.connect:stripe
                neq:x:@data.read/*/*/payment_method
                   .:
             .lambda
+
+               // We have a valid payment method.
                set-value:x:@.payment-method
                   get-value:x:@data.read/*/*/payment_method
 
          else
 
             /*
-             * No payment method associated with user, possibly because of erronously
-             * supplying numbers from card, etc. Hence, creating a new payment method with
-             * the specified data.
+             * No payment method associated with user, possibly because of
+             * supplying wrong card numbers, etc. Hence, creating a new payment
+             * method with the specified data.
              */
             unwrap:x:+/*
-            signal:strips.payment_method.create
+            signal:strips.payment_methods.create
                card_number:x:@.arguments/*/card_number
                card_exp_month:x:@.arguments/*/card_exp_month
                card_exp_year:x:@.arguments/*/card_exp_year
@@ -107,7 +108,7 @@ data.connect:stripe
 
             // Attaching payment method with customer in Stripe.
             unwrap:x:+/*
-            signal:strips.payment_method.attach
+            signal:strips.payment_methods.attach
                payment_method:x:@signal/@signal
                customer_id:x:@.customer-id
 
@@ -119,6 +120,8 @@ data.connect:stripe
                where
                   and
                      username.eq:x:@auth.ticket.get
+                     
+            // Making sure we can return the correct payment method to caller.
             set-value:x:@.payment-method
                get-value:x:@signal
 
@@ -142,9 +145,9 @@ data.connect:stripe
       set-value:x:@.customer-id
          get-value:x:@signal
 
-      // Creating a new payment method towards Stripe.
+      // Creating a new payment method with Stripe.
       unwrap:x:+/*
-      signal:strips.payment_method.create
+      signal:strips.payment_methods.create
          card_number:x:@.arguments/*/card_number
          card_exp_month:x:@.arguments/*/card_exp_month
          card_exp_year:x:@.arguments/*/card_exp_year
@@ -152,7 +155,7 @@ data.connect:stripe
 
       // Attaching payment method with customer in Stripe.
       unwrap:x:+/*
-      signal:strips.payment_method.attach
+      signal:strips.payment_methods.attach
          payment_method:x:@signal/@signal
          customer_id:x:@.customer-id
 
@@ -164,21 +167,13 @@ data.connect:stripe
          where
             and
                username.eq:x:@auth.ticket.get
+
+      // Making sure we can return payment method to caller.
       set-value:x:@.payment-method
          get-value:x:@signal
 
-   /*
-    * Now we have a customer, a payment method, and the customer and its payment method
-    * are associated with each other internally in our database, and in Stripe's systems.
-    *
-    * Hence, now we can create our subscription.
-    */
-   unwrap:x:+/*
-   signal:stripe.subscriptions.create
-      customer_id:x:@.customer-id
-      price:x:@.arguments/*/price
-      payment_method:x:@.payment-method
-
    // Returning success to caller.
+   unwrap:x:+/*/payment-method
    return
       result:success
+      payment-method:x:@.payment-method
