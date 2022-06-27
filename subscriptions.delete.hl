@@ -4,32 +4,29 @@
  * This file was automatically generated using Magic's CRUDifier.
  */
 .arguments
-   payment_method:string
-.description:Deletes one item from your payment_methods table in your [generic|stripe] database matching the specified argument(s)
+   subscription:string
+.description:Deletes one item from your subscriptions table in your [generic|stripe] database matching the specified argument(s)
 .type:crud-delete
 
 // Verifying user is authorized to access endpoint.
 auth.ticket.verify:root, admin, guest
 
-// Sanity checking invocation
-validators.mandatory:x:@.arguments/*/payment_method
+// Sanity checking invocation.
+validators.mandatory:x:@.arguments/*/subscription
 
-/*
- * Retrieving username that we'll need to make sure we only allow for
- * deleting records belonging to currently authenticated user.
- */
+// Retrieving currently authenticated user to ensure we only return subscriptions for that user.
 auth.ticket.get
 
 // Opening up our database connection.
-data.connect:stripe
+data.connect:[generic|stripe]
 
    // Deleting item from database.
    data.delete
-      table:payment_methods
+      table:subscriptions
       where
          and
             username.eq:x:@auth.ticket.get
-            payment_method.eq:x:@.arguments/*/payment_method
+            subscription.eq:x:@.arguments/*/subscription
 
    // Returning result of above invocation to caller.
    unwrap:x:+/*

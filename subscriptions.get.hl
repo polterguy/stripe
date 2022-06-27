@@ -4,16 +4,13 @@
  * This file was automatically generated using Magic's CRUDifier.
  */
 .arguments
-.description:Returns items from your payment_methods table in your [generic|stripe] database according to the specified arguments
+.description:Returns items from your subscriptions table in your [generic|stripe] database according to the specified arguments
 .type:crud-read
 
 // Verifying user is authorized to access endpoint.
 auth.ticket.verify:root, admin, guest
 
-/*
- * Retrieving username that we'll need to make sure we only allow for
- * deleting records belonging to currently authenticated user.
- */
+// Retrieving currently authenticated user to ensure we only return subscriptions for that user.
 auth.ticket.get
 
 // Opening up our database connection.
@@ -21,11 +18,9 @@ data.connect:[generic|stripe]
 
    // Reading data from database.
    data.read
-      table:payment_methods
+      table:subscriptions
       columns
-         payment_methods.payment_method
-         payment_methods.card_no
-         payment_methods.card_type
+         subscriptions.subscription
       where
          and
             username.eq:x:@auth.ticket.get
