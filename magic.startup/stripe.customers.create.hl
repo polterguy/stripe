@@ -1,0 +1,51 @@
+
+/*
+ * Slot responsible for creating a customer.
+ *
+ * Requires [name] and [email] arguments.
+ */
+slots.create:stripe.customers.create
+
+   // Sanity checking invocation.
+   validators.mandatory:x:@.arguments/*/username
+   validators.mandatory:x:@.arguments/*/name
+   validators.mandatory:x:@.arguments/*/email
+   validators.email:x:@.arguments/*/email
+
+   // Retrieving token to use for invocations towards Stripe.
+   .token
+   set-value:x:-
+      strings.concat
+         .:"Bearer "
+         config.get:"magic:stripe:token"
+
+   // Invoking Strip REST API.
+   http.post:"https://api.stripe.com/v1/customers"
+      headers
+         Content-Type:application/x-www-form-urlencoded
+         Authorization:x:@.token
+      payload
+         description:Aista customer
+         email:x:@.arguments/*/email
+         name:x:@.arguments/*/name
+         metadata[username]:x:@.arguments/*/username
+      convert:true
+
+   // Sanity checking above invocation.
+   if
+      mte
+         get-value:x:@http.post
+         .:int:400
+      .lambda
+
+         // Oops, something went wrong ...!!
+         lambda2hyper:x:@http.post
+         log.error:Something went wrong while invoking Stripe API
+            result:x:@lambda2hyper
+            provider:Stripe
+         throw:We could not process your payment
+            public:true
+            status:500
+
+   // Returning customer ID to caller.
+   return:x:@http.post/*/content/*/id
