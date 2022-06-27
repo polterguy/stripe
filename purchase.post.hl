@@ -173,7 +173,12 @@ data.connect:stripe
     *
     * Hence, now we can create our subscription.
     */
+   unwrap:x:+/*
    signal:stripe.subscriptions.create
       customer_id:x:@.customer-id
       price:x:@.arguments/*/price
       payment_method:x:@.payment-method
+
+   // Returning success to caller.
+   return
+      result:success
