@@ -10,5 +10,5 @@ PRAGMA foreign_keys = ON;
 create table customers (
   username varchar(256) primary key,
   customer_id varchar(256) not null,
-  payment_method varchar(256) not null
+  payment_method varchar(256)
 );
