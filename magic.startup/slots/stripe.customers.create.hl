@@ -2,7 +2,8 @@
 /*
  * Slot responsible for creating a customer.
  *
- * Requires [name] and [email] arguments.
+ * Requires [username], [name], and [email] arguments.
+ * Returns the customer ID to caller if successful, throw exceptions if not successful.
  */
 slots.create:stripe.customers.create
 
@@ -19,7 +20,7 @@ slots.create:stripe.customers.create
          .:"Bearer "
          config.get:"magic:stripe:token"
 
-   // Invoking Strip REST API.
+   // Invoking Stripe REST API.
    http.post:"https://api.stripe.com/v1/customers"
       headers
          Content-Type:application/x-www-form-urlencoded

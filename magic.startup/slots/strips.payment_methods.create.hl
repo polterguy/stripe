@@ -1,0 +1,52 @@
+
+/*
+ * Slot responsible for creating a payment method object.
+ *
+ * Requires [card_number], [card_exp_month], [card_exp_year], [card_cvs].
+ */
+slots.create:strips.payment_methods.create
+
+   // Sanity checking invocation.
+   validators.mandatory:x:@.arguments/*/card_number
+   validators.mandatory:x:@.arguments/*/card_exp_month
+   validators.mandatory:x:@.arguments/*/card_exp_year
+   validators.mandatory:x:@.arguments/*/card_cvs
+
+   // Retrieving token to use for invocations towards Stripe.
+   .token
+   set-value:x:-
+      strings.concat
+         .:"Bearer "
+         config.get:"magic:stripe:token"
+
+   // Invoking Stripe REST API.
+   http.post:"https://api.stripe.com/v1/payment_methods"
+      headers
+         Content-Type:application/x-www-form-urlencoded
+         Authorization:x:@.token
+      payload
+         card[number]:x:@.arguments/*/card_number
+         card[exp_month]:x:@.arguments/*/card_exp_month
+         card[exp_year]:x:@.arguments/*/card_exp_year
+         card[cvc]:x:@.arguments/*/card_cvs
+         type:card
+      convert:true
+
+   // Sanity checking above invocation.
+   if
+      mte
+         get-value:x:@http.post
+         .:int:400
+      .lambda
+
+         // Oops, something went wrong ...!!
+         lambda2hyper:x:@http.post
+         log.error:Something went wrong while invoking Stripe API
+            result:x:@lambda2hyper
+            provider:Stripe
+         throw:We could not process your payment
+            public:true
+            status:500
+
+   // Returning customer ID to caller.
+   return:x:@http.post/*/content/*/id

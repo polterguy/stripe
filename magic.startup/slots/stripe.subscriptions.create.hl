@@ -1,0 +1,49 @@
+
+/*
+ * Slot responsible for creating a subscription.
+ *
+ * Requires [price], [customer_id] and [payment_method] arguments.
+ */
+slots.create:stripe.subscriptions.create
+
+   // Sanity checking invocation.
+   validators.mandatory:x:@.arguments/*/price
+   validators.mandatory:x:@.arguments/*/customer_id
+   validators.mandatory:x:@.arguments/*/payment_method
+
+   // Retrieving token to use for invocations towards Stripe.
+   .token
+   set-value:x:-
+      strings.concat
+         .:"Bearer "
+         config.get:"magic:stripe:token"
+
+   // Invoking Stripe REST API.
+   http.post:"https://api.stripe.com/v1/subscriptions"
+      headers
+         Content-Type:application/x-www-form-urlencoded
+         Authorization:x:@.token
+      payload
+         customer:x:@.arguments/*/customer_id
+         items[0][price]:x:@.arguments/*/price
+         default_payment_method:x:@.arguments/*/payment_method
+      convert:true
+
+   // Sanity checking above invocation.
+   if
+      mte
+         get-value:x:@http.post
+         .:int:400
+      .lambda
+
+         // Oops, something went wrong ...!!
+         lambda2hyper:x:@http.post
+         log.error:Something went wrong while invoking Stripe API
+            result:x:@lambda2hyper
+            provider:Stripe
+         throw:We could not process your payment
+            public:true
+            status:500
+
+   // Returning customer ID to caller.
+   return:x:@http.post/*/content/*/id
