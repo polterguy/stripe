@@ -20,6 +20,11 @@ auth.ticket.get
 // Opening up our database connection.
 data.connect:[generic|stripe]
 
+   // Invoking Stripe to cancel subscription.
+   unwrap:x:+/*
+   signal:stripe.subscriptions.cancel
+      subscription:x:@.arguments/*/subscription
+
    // Deleting item from database.
    data.delete
       table:subscriptions
@@ -32,3 +37,4 @@ data.connect:[generic|stripe]
    unwrap:x:+/*
    return
       affected:x:@data.delete
+      subscription:x:@signal

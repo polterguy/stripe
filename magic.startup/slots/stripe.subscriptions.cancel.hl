@@ -1,0 +1,45 @@
+
+/*
+ * Slot responsible for cancelling a subscription.
+ *
+ * Requires [subscription] argument.
+ */
+slots.create:stripe.subscriptions.cancel
+
+   // Sanity checking invocation.
+   validators.mandatory:x:@.arguments/*/subscription
+
+   // Retrieving token to use for invocations towards Stripe.
+   .token
+   set-value:x:-
+      strings.concat
+         .:"Bearer "
+         config.get:"magic:stripe:token"
+
+   // Invoking Stripe REST API.
+   strings.concat
+      .:"https://api.stripe.com/v1/subscriptions/"
+      get-value:x:@.arguments/*/subscription
+   http.delete:x:-
+      headers
+         Authorization:x:@.token
+      convert:true
+
+   // Sanity checking above invocation.
+   if
+      mte
+         get-value:x:@http.post
+         .:int:400
+      .lambda
+
+         // Oops, something went wrong ...!!
+         lambda2hyper:x:@http.post
+         log.error:Something went wrong while invoking Stripe API
+            result:x:@lambda2hyper
+            provider:Stripe
+         throw:We could not cancel your subscription
+            public:true
+            status:500
+
+   // Returning customer ID to caller.
+   return:x:@http.delete/*/content/*/id
