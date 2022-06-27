@@ -63,6 +63,15 @@ data.connect:stripe
       payment_method:x:@.arguments/*/payment_method
       price:x:@.arguments/*/price
 
+   // Creating our subscription and storing it in our database.
+   data.connect:stripe
+      data.create
+         table:subscriptions
+         values
+            username:x:@auth.ticket.get
+            subscription:x:@signal
+
    // Returning success to caller.
+   unwrap:x:+/*
    return
-      result:success
+      subscription:x:@signal
