@@ -7,6 +7,8 @@
  */
 create database stripe;
 
+use stripe;
+
 /*
  * Contains username to customer_id (at Stripe) references.
  */
