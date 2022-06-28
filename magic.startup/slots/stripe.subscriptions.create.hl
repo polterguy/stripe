@@ -41,9 +41,12 @@ slots.create:stripe.subscriptions.create
          log.error:Something went wrong while invoking Stripe API
             result:x:@lambda2hyper
             provider:Stripe
-         throw:We could not process your payment
+         throw:We could not create your subscription
             public:true
             status:500
 
    // Returning customer ID to caller.
-   return:x:@http.post/*/content/*/id
+   unwrap:x:+/*
+   return
+      id:x:@http.post/*/content/*/id
+      product:x:@http.post/*/content/*/items/*/data/0/*/price/*/product

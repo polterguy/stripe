@@ -42,7 +42,7 @@ slots.create:strips.payment_methods.attach
          log.error:Something went wrong while invoking Stripe API
             result:x:@lambda2hyper
             provider:Stripe
-         throw:We could not process your payment
+         throw:"We could not attach your payment method to Stripe's systems"
             public:true
             status:500
 

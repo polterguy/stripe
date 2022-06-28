@@ -69,10 +69,11 @@ data.connect:stripe
          table:subscriptions
          values
             username:x:@auth.ticket.get
-            subscription:x:@signal
+            subscription:x:@signal/*/id
             price:x:@.arguments/*/price
+            product:x:@signal/*/product
 
    // Returning success to caller.
    unwrap:x:+/*
    return
-      subscription:x:@signal
+      subscription:x:@signal/*/id

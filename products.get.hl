@@ -1,0 +1,47 @@
+
+/*
+ * Returns the product information from Strip given the specified product ID.
+ */
+.arguments
+   product:string
+
+// Sanity checking invocation.
+validators.mandatory:x:@.arguments/*/product
+
+// Retrieving token to use for invocations towards Stripe.
+.token
+set-value:x:-
+   strings.concat
+      .:"Bearer "
+      config.get:"magic:stripe:token"
+
+// Retrieving product information from Stripe.
+strings.concat
+   .:"https://api.stripe.com/v1/products/"
+   get-value:x:@.arguments/*/product
+http.get:x:-
+   convert:true
+   headers
+      Authorization:x:@.token
+
+// Sanity checking above invocation.
+if
+   mte
+      get-value:x:@http.post
+      .:int:400
+   .lambda
+
+      // Oops, something went wrong ...!!
+      lambda2hyper:x:@http.post
+      log.error:Something went wrong while invoking Stripe API
+         result:x:@lambda2hyper
+         provider:Stripe
+      throw:"We could not successfully retrieve that product from Stripe's systems"
+         public:true
+         status:500
+
+// Returning Stripe information to caller.
+unwrap:x:+/*
+return
+   name:x:@http.get/*/content/*/name
+   description:x:@http.get/*/content/*/description

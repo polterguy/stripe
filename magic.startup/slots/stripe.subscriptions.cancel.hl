@@ -37,7 +37,7 @@ slots.create:stripe.subscriptions.cancel
          log.error:Something went wrong while invoking Stripe API
             result:x:@lambda2hyper
             provider:Stripe
-         throw:We could not cancel your subscription
+         throw:"We could not cancel your subscription in Stripe's systems"
             public:true
             status:500
 

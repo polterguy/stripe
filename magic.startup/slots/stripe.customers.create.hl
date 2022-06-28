@@ -44,7 +44,7 @@ slots.create:stripe.customers.create
          log.error:Something went wrong while invoking Stripe API
             result:x:@lambda2hyper
             provider:Stripe
-         throw:We could not process your payment
+         throw:We could not successfully create you as a customer at Stripe
             public:true
             status:500
 
