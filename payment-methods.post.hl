@@ -103,7 +103,10 @@ data.connect:stripe
       card_exp_year:x:@.arguments/*/card_exp_year
       card_cvs:x:@.arguments/*/card_cvs
 
-   // Making sure we can store the peyment method and brand.
+   /*
+    * Making sure we can store the payment method and brand later and
+    * associate with our internal records.
+    */
    set-value:x:@.payment-method
       get-value:x:@signal/*/id
    set-value:x:@.brand
@@ -130,7 +133,7 @@ data.connect:stripe
          card_no:x:@strings.substring
          card_type:x:@.brand
 
-   // Returning success to caller.
+   // Returning 4 last digits of card, brand of card, and payment method ID to caller.
    unwrap:x:+/*
    return
       payment-method:x:@.payment-method

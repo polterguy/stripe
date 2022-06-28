@@ -70,6 +70,7 @@ data.connect:stripe
          values
             username:x:@auth.ticket.get
             subscription:x:@signal
+            price:x:@.arguments/*/price
 
    // Returning success to caller.
    unwrap:x:+/*

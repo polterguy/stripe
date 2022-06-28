@@ -21,6 +21,7 @@ data.connect:[generic|stripe]
       table:subscriptions
       columns
          subscriptions.subscription
+         subscriptions.price
       where
          and
             username.eq:x:@auth.ticket.get
