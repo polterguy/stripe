@@ -14,8 +14,11 @@ validators.mandatory:x:@.arguments/*/price
  * having to invoke Stripe's API every time somebody requests product
  * information.
  */
+strings.concat
+   .:stripe.prices.cache.
+   get-value:x:@.arguments/*/price
 unwrap:x:+/*/.lambda/*/.price
-cache.try-get:stripe.prices.cache
+cache.try-get:x:@strings.concat
    expiration:6000
    .lambda
 
