@@ -3,6 +3,11 @@
  */
 
 /*
+ * Creating our Stripe database.
+ */
+create database stripe;
+
+/*
  * Contains username to customer_id (at Stripe) references.
  */
 create table customers (
