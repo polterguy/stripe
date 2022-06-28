@@ -45,7 +45,7 @@ invocation as follows.
 
 Notice, the price above needs to be manually created in Stripe's dashboard as a _"product"_.
 
-## Usage
+## Detailed usage description
 
 The first thing you'll need to do to create a subscription type of payment, is to invoke
 the `POST` _"payment-method"_ endpoint passing in the following arguments
@@ -86,6 +86,19 @@ that you'll typically create in your Stripe dashboard.
 If you want to delete a subscription, and/or a payment method, you can invoke the `DELETE`
 equivalent endpoints, and the module will take care of everything internally by itself, and
 correctly invoke the Stripe API to cancel the subscription.
+
+## Helper endpoints
+
+When a subscription is created, both the product ID and the price ID from Stripe is associated
+with the subscription, and returned as you invoke the `GET` _"subscriptions"_ endpoint. You can
+use the product ID to retrieve meta information about the product, to display something to the
+user such that he knows which product he's actually subscribing to. This will internally invoke
+Stripe's API, and retrieve the product information associated with your product from their
+internal systems. Since this is rarely changed information, the endpoint applies some fairly
+aggressive caching, both server side, and client side, so it should be fairly harmless to
+invoke in a loop for instance, while iterating all subscriptions the customer has, unless
+the number of subscriptions are several hundreds of course. The intention of course would be
+to display what type of product is associated with his or her subscription(s).
 
 ## Configuration
 
