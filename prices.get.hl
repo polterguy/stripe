@@ -1,26 +1,26 @@
 
 /*
- * Returns the product information from Stripe given the specified product ID.
+ * Returns the price information from Stripe given the specified product ID.
  */
 .arguments
-   product:string
-.description:"Returns the specified product as returned from Stripe's API"
+   price:string
+.description:"Returns the specified price as returned from Stripe's API"
 
 // Sanity checking invocation.
-validators.mandatory:x:@.arguments/*/product
+validators.mandatory:x:@.arguments/*/price
 
 /*
  * Applying some fairly aggressive server side cache here to avoid
  * having to invoke Stripe's API every time somebody requests product
  * information.
  */
-unwrap:x:+/*/.lambda/*/.product
-cache.try-get:stripe.products.cache
+unwrap:x:+/*/.lambda/*/.price
+cache.try-get:stripe.prices.cache
    expiration:6000
    .lambda
 
       // Forward evaluated further up.
-      .product:x:@.arguments/*/product
+      .price:x:@.arguments/*/price
 
       // Retrieving token to use for invocations towards Stripe.
       .token
@@ -31,8 +31,8 @@ cache.try-get:stripe.products.cache
 
       // Retrieving product information from Stripe.
       strings.concat
-         .:"https://api.stripe.com/v1/products/"
-         get-value:x:@.product
+         .:"https://api.stripe.com/v1/prices/"
+         get-value:x:@.price
       http.get:x:-
          convert:true
          headers
@@ -50,15 +50,18 @@ cache.try-get:stripe.products.cache
             log.error:Something went wrong while invoking Stripe API
                result:x:@lambda2hyper
                provider:Stripe
-            throw:"We could not successfully retrieve that product from Stripe's systems"
+            throw:"We could not successfully retrieve that price from Stripe's systems"
                public:true
                status:500
 
       // Returning Stripe information to caller.
       unwrap:x:+/*
       lambda2hyper
-         name:x:@http.get/*/content/*/name
-         description:x:@http.get/*/content/*/description
+         currency:x:@http.get/*/content/*/currency
+         product:x:@http.get/*/content/*/product
+         interval:x:@http.get/*/content/*/recurring/*/interval
+         tax_behaviour:x:@http.get/*/content/*/tax_behavior
+         amount:x:@http.get/*/content/*/unit_amount
       return:x:-
 
 // Making sure we apply aggressive HTTP cache control
