@@ -7,6 +7,9 @@
  */
 create database stripe;
 
+/*
+ * Making sure we use stripe database.
+ */
 use stripe;
 
 /*
