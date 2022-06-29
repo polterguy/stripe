@@ -72,6 +72,7 @@ data.connect:stripe
             subscription:x:@signal/*/id
             price:x:@.arguments/*/price
             product:x:@signal/*/product
+            payment_method:x:@.arguments/*/payment_method
 
    // Returning success to caller.
    unwrap:x:+/*
