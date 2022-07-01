@@ -2,7 +2,6 @@
 /*
  * Stripe integration allowing users to purchase a subscription type of product.
  */
-
 .arguments
    price:string
    payment_method:string
@@ -88,6 +87,20 @@ data.connect:stripe
             price:x:@.arguments/*/price
             product:x:@signal/*/product
             payment_method:x:@.arguments/*/payment_method
+
+   // Invoking any callback sink methods, but only if meta information was supplied.
+   if
+      exists:x:@.arguments/*/meta
+      .lambda
+
+         // Retrieving all slots that are interested in callback notifications.
+         slots.vocabulary:payments.subscriptions.subscribed.
+         
+         // Invoking all slots returned above.
+         for-each:x:-/*
+            add:x:./*/signal
+               get-nodes:x:@.arguments/*/meta
+            signal:x:@.dp/#
 
    // Returning success to caller.
    unwrap:x:+/*
