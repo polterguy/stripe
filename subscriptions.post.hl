@@ -6,6 +6,7 @@
 .arguments
    price:string
    payment_method:string
+   meta:string
 .description:Creates a new subscription and associates with the currently authenticated user
 
 // Sanity checking invocation.
@@ -50,6 +51,20 @@ data.connect:stripe
    // Setting customer id and payment method.
    set-value:x:@.customer-id
       get-value:x:@data.read/*/*/customer_id
+
+   // Checking if request had a [meta] argument.
+   if
+      and
+         exists:x:@.arguments/*/meta
+         not
+            eq:x:@.arguments/*/meta
+               .
+         not
+            eq:x:@.arguments/*/meta
+               .:
+      .lambda
+         add:x:@data.connect/*/signal
+            get-nodes:x:@.arguments/*/meta
 
    /*
     * Now we have a customer, a payment method, and the customer and its payment method

@@ -3,6 +3,7 @@
  * Slot responsible for creating a subscription.
  *
  * Requires [price], [customer_id] and [payment_method] arguments.
+ * Optionally pass in [meta] data as a string.
  */
 slots.create:stripe.subscriptions.create
 
@@ -17,6 +18,15 @@ slots.create:stripe.subscriptions.create
       strings.concat
          .:"Bearer "
          config.get:"magic:stripe:token"
+
+   // Checking if [meta] was supplied, and if so, associating it with request.
+   if
+      exists:x:@.arguments/*/meta
+      .lambda
+         unwrap:x:+/*/*
+         add:x:../*/http.post/*/payload
+            .
+               metadata[meta]:x:@.arguments/*/meta
 
    // Invoking Stripe REST API.
    http.post:"https://api.stripe.com/v1/subscriptions"
