@@ -103,7 +103,7 @@ data.connect:stripe
             signal:x:@.dp/#
 
    // Checking if we've got a notifications callback, and if so, invoking it.
-   config.get:"stripe:notifications"
+   config.get:"magic:stripe:notifications"
    if
       and
          neq:x:@config.get
