@@ -133,6 +133,25 @@ data.connect:stripe
          card_no:x:@strings.substring
          card_type:x:@.brand
 
+   // Checking if we've got a notifications callback, and if so, invoking it.
+   config.get:"stripe:notifications"
+   if
+      and
+         neq:x:@config.get
+            .
+         neq:x:@config.get
+            .:
+      .lambda
+         .exe
+            signal:foo
+               type:payments
+               content:A payment method was associated with your account
+               username:x:@auth.ticket.get
+         unwrap:x:@.exe/*/*/username
+         set-value:x:@.exe/*/signal/=foo
+            get-value:x:@config.get
+         eval:x:@.exe
+
    // Returning 4 last digits of card, brand of card, and payment method ID to caller.
    unwrap:x:+/*
    return
