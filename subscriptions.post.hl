@@ -102,6 +102,25 @@ data.connect:stripe
                get-nodes:x:@.arguments/*/meta
             signal:x:@.dp/#
 
+   // Checking if we've got a notifications callback, and if so, invoking it.
+   config.get:"stripe:notifications"
+   if
+      and
+         neq:x:@config.get
+            .
+         neq:x:@config.get
+            .:
+      .lambda
+         .exe
+            signal:foo
+               type:payments
+               content:Your subscription was successfully created
+               username:x:@auth.ticket.get
+         unwrap:x:@.exe/*/*/username
+         set-value:x:@.exe/*/signal/=foo
+            get-value:x:@config.get
+         eval:x:@.exe
+
    // Returning success to caller.
    unwrap:x:+/*
    return
