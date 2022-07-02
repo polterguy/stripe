@@ -135,22 +135,11 @@ data.connect:stripe
 
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
-   if
-      and
-         neq:x:@config.get
-            .
-         neq:x:@config.get
-            .:
-      .lambda
-         .exe
-            signal:foo
-               type:payments
-               content:A payment method was associated with your account
-               username:x:@auth.ticket.get
-         unwrap:x:@.exe/*/*/username
-         set-value:x:@.exe/*/signal/=foo
-            get-value:x:@config.get
-         eval:x:@.exe
+   unwrap:x:+/*/username
+   signal:x:@config.get
+      type:payments
+      content:A payment method was associated with your account
+      username:x:@auth.ticket.get
 
    // Returning 4 last digits of card, brand of card, and payment method ID to caller.
    unwrap:x:+/*

@@ -104,24 +104,13 @@ data.connect:stripe
 
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
-   if
-      and
-         neq:x:@config.get
-            .
-         neq:x:@config.get
-            .:
-      .lambda
-         .exe
-            signal:foo
-               type:payments
-               content:Your subscription was successfully created
-               username:x:@auth.ticket.get
-         unwrap:x:@.exe/*/*/username
-         set-value:x:@.exe/*/signal/=foo
-            get-value:x:@config.get
-         eval:x:@.exe
+   unwrap:x:+/*/username
+   signal:x:@config.get
+      type:payments
+      content:Your subscription was successfully created
+      username:x:@auth.ticket.get
 
    // Returning success to caller.
    unwrap:x:+/*
    return
-      subscription:x:@signal/*/id
+      subscription:x:@signal/@signal/*/id
