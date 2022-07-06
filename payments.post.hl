@@ -108,7 +108,7 @@ data.connect:stripe
    config.get:"magic:stripe:notifications"
    unwrap:x:+/*/username
    signal:x:@config.get
-      type:payments
+      type:payment
       content:Your payment was successfully created
       username:x:@auth.ticket.get
 
