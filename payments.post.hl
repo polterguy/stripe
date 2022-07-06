@@ -1,18 +1,20 @@
 
 /*
- * Stripe integration allowing users to purchase a subscription type of product.
+ * Stripe integration allowing users to purchase a product paying once immediately.
  */
 .arguments
-   price:string
+   amount:int
+   currency:string
    payment_method:string
    meta:string
-.description:Creates a new subscription and associates with the currently authenticated user
+.description:Creates a new payment and associates with the currently authenticated user
 
 // Sanity checking invocation.
 auth.ticket.verify:root, admin, guest
 
 // Sanity checking invocation.
-validators.mandatory:x:@.arguments/*/price
+validators.mandatory:x:@.arguments/*/amount
+validators.mandatory:x:@.arguments/*/currency
 validators.mandatory:x:@.arguments/*/payment_method
 
 // Retrieving username that we'll need to extract name and email.
@@ -72,19 +74,20 @@ data.connect:stripe
     * Hence, now we can create our subscription.
     */
    unwrap:x:+/*
-   signal:stripe.subscriptions.create
-      customer_id:x:@.customer-id
+   signal:stripe.payments.create
+      amount:x:@.arguments/*/amount
+      currency:x:@.arguments/*/currency
       payment_method:x:@.arguments/*/payment_method
-      price:x:@.arguments/*/price
+      customer_id:x:@.customer-id
 
    // Creating our subscription and storing it in our database.
    data.create
-      table:subscriptions
+      table:payments
       values
+         payment:x:@signal/*/id
          username:x:@auth.ticket.get
-         subscription:x:@signal/*/id
-         price:x:@.arguments/*/price
-         product:x:@signal/*/product
+         amount:x:@.arguments/*/amount
+         currency:x:@.arguments/*/currency
          payment_method:x:@.arguments/*/payment_method
 
    // Invoking any callback sink methods, but only if meta information was supplied.
@@ -106,7 +109,7 @@ data.connect:stripe
    unwrap:x:+/*/username
    signal:x:@config.get
       type:payments
-      content:Your subscription was successfully created
+      content:Your payment was successfully created
       username:x:@auth.ticket.get
 
    // Returning success to caller.

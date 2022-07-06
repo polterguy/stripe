@@ -1,0 +1,65 @@
+
+/*
+ * Slot responsible for creating a payment.
+ *
+ * Requires [amount], [currency], [customer_id] and [payment_method] arguments.
+ * Optionally pass in [meta] data as a string.
+ */
+slots.create:stripe.payments.create
+
+   // Sanity checking invocation.
+   validators.mandatory:x:@.arguments/*/amount
+   validators.mandatory:x:@.arguments/*/currency
+   validators.mandatory:x:@.arguments/*/payment_method
+   validators.mandatory:x:@.arguments/*/customer_id
+
+   // Retrieving token to use for invocations towards Stripe.
+   .token
+   set-value:x:-
+      strings.concat
+         .:"Bearer "
+         config.get:"magic:stripe:token"
+
+   // Checking if [meta] was supplied, and if so, associating it with request.
+   if
+      exists:x:@.arguments/*/meta
+      .lambda
+         unwrap:x:+/*/*
+         add:x:../*/http.post/*/payload
+            .
+               metadata[meta]:x:@.arguments/*/meta
+
+   // Invoking Stripe REST API.
+   http.post:"https://api.stripe.com/v1/payment_intents"
+      headers
+         Content-Type:application/x-www-form-urlencoded
+         Authorization:x:@.token
+      payload
+         amount:x:@.arguments/*/amount
+         currency:x:@.arguments/*/currency
+         payment_method:x:@.arguments/*/payment_method
+         customer:x:@.arguments/*/customer_id
+         confirm:true
+      convert:true
+
+   // Sanity checking above invocation.
+   if
+      mte
+         get-value:x:@http.post
+         .:int:400
+      .lambda
+
+         // Oops, something went wrong ...!!
+         lambda2hyper:x:@http.post
+         log.error:Something went wrong while invoking Stripe API
+            result:x:@lambda2hyper
+            provider:Stripe
+         throw:We could not create your subscription
+            public:true
+            status:500
+
+   // Returning customer ID to caller.
+   unwrap:x:+/*
+   return
+      id:x:@http.post/*/content/*/id
+      product:x:@http.post/*/content/*/items/*/data/0/*/price/*/product

@@ -1,0 +1,37 @@
+
+/*
+ * Template for HTTP GET CRUD requests.
+ * This file was automatically generated using Magic's CRUDifier.
+ */
+.arguments
+   limit:long
+   offset:long
+   order:string
+   direction:string
+.description:Returns items from your payments table in your [generic|stripe] database according to the specified arguments
+.type:crud-read
+
+// Verifying user is authorized to access endpoint.
+auth.ticket.verify:root, admin, guest
+
+// Retrieving currently authenticated user to ensure we only return subscriptions for that user.
+auth.ticket.get
+
+// Opening up our database connection.
+data.connect:[generic|stripe]
+
+   // Reading data from database.
+   data.read
+      table:payments
+      columns
+         payments.username
+         payments.amount
+         payments.currency
+         payments.payment_method
+      where
+         and
+            payments.username.eq:x:@auth.ticket.get
+      limit:-1
+
+   // Returning result of above read invocation to caller.
+   return-nodes:x:@data.read/*
