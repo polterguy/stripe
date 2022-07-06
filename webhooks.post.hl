@@ -1,7 +1,0 @@
-
-/*
- * Webhook callback invoked when events occurs in Stripe that we need to know about.
- */
-
-lambda2hyper:x:../*
-log.info:x:-
