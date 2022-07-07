@@ -26,14 +26,6 @@ data.connect:[generic|stripe]
    signal:stripe.subscriptions.cancel
       subscription:x:@.arguments/*/subscription
 
-   // Deleting item from database.
-   data.delete
-      table:subscriptions
-      where
-         and
-            username.eq:x:@auth.ticket.get
-            subscription.eq:x:@.arguments/*/subscription
-
    // Invoking any callback sink methods, but only if meta information was supplied.
    if
       exists:x:@.arguments/*/meta
@@ -56,6 +48,14 @@ data.connect:[generic|stripe]
       type:subscription
       content:Your subscription was successfully deleted
       username:x:@auth.ticket.get
+
+   // Deleting item from database.
+   data.delete
+      table:subscriptions
+      where
+         and
+            username.eq:x:@auth.ticket.get
+            subscription.eq:x:@.arguments/*/subscription
 
    // Returning result of above invocation to caller.
    unwrap:x:+/*
