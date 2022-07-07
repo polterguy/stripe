@@ -24,6 +24,7 @@ data.connect:[generic|stripe]
          subscriptions.price
          subscriptions.product
          subscriptions.payment_method
+         subscriptions.meta
       where
          and
             username.eq:x:@auth.ticket.get

@@ -30,6 +30,7 @@ create table subscriptions (
   subscription varchar(256) primary key,
   username varchar(256) not null,
   payment_method varchar(256) not null,
+  meta varchar(1024),
   foreign key (username) references customers (username),
   foreign key (payment_method) references payment_methods (payment_method)
 );
