@@ -103,6 +103,7 @@ data.connect:stripe
             add:x:./*/signal
                get-nodes:x:@.arguments/*/meta
             signal:x:@.dp/#
+               subscription:payment
 
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
