@@ -37,5 +37,7 @@ create table payment_methods (
 create table subscriptions (
   subscription varchar(256) primary key,
   username varchar(256) not null,
+  payment_method varchar(256) not null,
+  meta varchar(1024),
   constraint subscriptions_customers_fky foreign key (username) references customers (username)
 );

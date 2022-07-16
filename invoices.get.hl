@@ -1,0 +1,118 @@
+
+/*
+ * Lists all invoices associated with the currently authenticated customer.
+ */
+.arguments
+.description:Returns all invoices associated with currently authenticated user.
+.type:custom
+
+// Verifying user is authorized to access endpoint.
+auth.ticket.verify:root, admin, guest
+
+// Retrieving username that we'll need to extract customer from our internal systems.
+auth.ticket.get
+
+/*
+ * Opening up a database connection to our stripe database, since we want to store
+ * values associating the username with stripe internal data as we proceed.
+ */
+data.connect:stripe
+
+   // Will contain customer-id reference from Stripe's systems.
+   .customer-id
+
+   // Finding Stripe customer ID from username.
+   data.read
+      table:customers
+      values
+         customer_id
+      where
+         and
+            username.eq:x:@auth.ticket.get
+   if
+      exists:x:@data.read/*/*
+      .lambda
+
+         // Customer exists in internal systems.
+         set-value:x:@.customer-id
+            get-value:x:@data.read/*/*/customer_id
+
+         // Retrieving token to use for invocations towards Stripe.
+         .token
+         set-value:x:-
+            strings.concat
+               .:"Bearer "
+               config.get:"magic:stripe:token"
+
+         // Invoking Stripe REST API.
+         .url
+         set-value:x:@.url
+            strings.concat
+               .:"https://api.stripe.com/v1/invoices"
+               .:"?limit=100&customer="
+               strings.url-encode:x:@.customer-id
+         http.get:x:@.url
+            headers
+               Authorization:x:@.token
+            convert:true
+
+         // Sanity checking above invocation.
+         if
+            mte
+               get-value:x:@http.post
+               .:int:400
+            .lambda
+
+               // Oops, something went wrong ...!!
+               lambda2hyper:x:@http.post
+               log.error:Something went wrong while invoking Stripe API
+                  result:x:@lambda2hyper
+                  provider:Stripe
+               throw:We could not successfully create you as a customer at Stripe
+                  public:true
+                  status:500
+
+         // Returning result to caller.
+         .signal
+         for-each:x:@http.get/*/content/*/data/*
+            .data
+               .
+                  name:x:@.dp/#/*/customer_name
+                  email:x:@.dp/#/*/customer_email
+                  account_country:x:@.dp/#/*/account_country
+                  currency:x:@.dp/#/*/currency
+                  amount_due:x:@.dp/#/*/amount_due
+                  amount_paid:x:@.dp/#/*/amount_paid
+                  hosted_invoice_url:x:@.dp/#/*/hosted_invoice_url
+                  invoice_pdf:x:@.dp/#/*/invoice_pdf
+                  charge:x:@.dp/#/*/charge
+                  balance:x:@.dp/#/*/ending_balance
+                  items
+            unwrap:x:@.data/**
+            for-each:x:@.dp/#/*/lines/*/data/*
+               .line
+                  .
+                     id:x:@.dp/#/*/id
+                     amount:x:@.dp/#/*/amount
+                     amount_excluding_tax:x:@.dp/#/*/amount_excluding_tax
+                     price_id:x:@.dp/#/*/price/*/id
+                     product:x:@.dp/#/*/price/*/product
+                     tax:x:@.dp/#/*/price/*/tax_behavior
+                     type:x:@.dp/#/*/price/*/type
+                     interval:x:@.dp/#/*/price/*/recurring/*/interval
+                     interval_count:x:@.dp/#/*/price/*/recurring/*/interval_count
+                     period
+                        start
+                        end
+               unwrap:x:@.line/**
+               set-value:x:@.line/*/*/period/*/start
+                  date.from-unix:x:@.dp/#/*/period/*/start
+               set-value:x:@.line/*/*/period/*/end
+                  date.from-unix:x:@.dp/#/*/period/*/end
+               add:x:@.data/*/*/items
+                  get-nodes:x:@.line/*
+            add:x:@.signal/./*/return
+               get-nodes:x:@.data/*
+         return
+return
+   result:no-customer
