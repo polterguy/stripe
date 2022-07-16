@@ -108,7 +108,7 @@ data.connect:stripe
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
    unwrap:x:+/*/username
-   signal:x:@config.get
+   try-signal:x:@config.get
       type:payment
       content:Your payment was successfully created
       username:x:@auth.ticket.get
@@ -116,4 +116,4 @@ data.connect:stripe
    // Returning success to caller.
    unwrap:x:+/*
    return
-      subscription:x:@signal/@signal/*/id
+      payment:x:@signal/*/id
