@@ -1,7 +1,7 @@
 
 create table payments (
-  payment varchar(256) primary key,
-  username varchar(256) not null,
+  payment varchar(256) primary key not null,
+  username varchar(256) not null not null,
   amount integer not null,
   currency varchar(5) not null,
   payment_method varchar(256) not null,
