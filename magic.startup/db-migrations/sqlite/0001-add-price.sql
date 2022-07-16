@@ -2,4 +2,4 @@
 /*
  * Add the price column to the subscriptions table.
  */
-alter table subscriptions add column price varchar(256);
+alter table subscriptions add column price varchar(256) not null;
