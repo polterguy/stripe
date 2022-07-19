@@ -86,6 +86,8 @@ data.connect:stripe
                   hosted_invoice_url:x:@.dp/#/*/hosted_invoice_url
                   invoice_pdf:x:@.dp/#/*/invoice_pdf
                   charge:x:@.dp/#/*/charge
+                  invoice_no:x:@.dp/#/*/number
+                  status:x:@.dp/#/*/status
                   balance:x:@.dp/#/*/ending_balance
                   items
             unwrap:x:@.data/**

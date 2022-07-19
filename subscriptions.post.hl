@@ -95,7 +95,7 @@ data.connect:stripe
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
    unwrap:x:+/*/username
-   signal:x:@config.get
+   try-signal:x:@config.get
       type:subscription
       content:Your subscription was successfully created
       username:x:@auth.ticket.get
