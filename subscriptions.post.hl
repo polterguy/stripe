@@ -15,7 +15,7 @@ auth.ticket.verify:root, admin, guest
 validators.mandatory:x:@.arguments/*/price
 validators.mandatory:x:@.arguments/*/payment_method
 
-// Retrieving username that we'll need to extract name and email.
+// Retrieving username that we'll need to extract username from customers table.
 auth.ticket.get
 
 /*
@@ -89,8 +89,11 @@ data.connect:stripe
          for-each:x:-/*
             add:x:./*/signal
                get-nodes:x:@.arguments/*/meta
+            unwrap:x:+/*
             signal:x:@.dp/#
                type:subscription
+               username:x:@auth.ticket.get
+               price:x:@.arguments/*/price
 
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
