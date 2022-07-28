@@ -44,7 +44,7 @@ data.connect:[generic|stripe]
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
    unwrap:x:+/*/username
-   signal:x:@config.get
+   try-signal:x:@config.get
       type:subscription
       content:Your subscription was successfully deleted
       username:x:@auth.ticket.get
@@ -61,4 +61,4 @@ data.connect:[generic|stripe]
    unwrap:x:+/*
    return
       affected:x:@data.delete
-      subscription:x:@signal/@signal
+      subscription:x:@signal
