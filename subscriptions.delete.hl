@@ -5,7 +5,6 @@
  */
 .arguments
    subscription:string
-   meta:string
 .description:Deletes one item from your subscriptions table in your [generic|stripe] database matching the specified argument(s)
 .type:crud-delete
 
@@ -21,14 +20,24 @@ auth.ticket.get
 // Opening up our database connection.
 data.connect:[generic|stripe]
 
+   // Retrieving meta for subscription, and if existing, invoking callback slots.
+   data.read
+      table:subscriptions
+      values
+         meta
+      where
+         and
+            subscription.eq:x:@.arguments/*/subscription
+            username.eq:x:@auth.ticket.get
+
    // Invoking Stripe to cancel subscription.
    unwrap:x:+/*
    signal:stripe.subscriptions.cancel
       subscription:x:@.arguments/*/subscription
 
-   // Invoking any callback sink methods, but only if meta information was supplied.
+   // Invoking callback sink methods if meta information exists for subscription.
    if
-      exists:x:@.arguments/*/meta
+      exists:x:@data.read/*/*/meta
       .lambda
 
          // Retrieving all slots that are interested in callback notifications.
@@ -36,10 +45,11 @@ data.connect:[generic|stripe]
          
          // Invoking all slots returned above.
          for-each:x:-/*
-            add:x:./*/signal
-               get-nodes:x:@.arguments/*/meta
+            unwrap:x:+/*
             signal:x:@.dp/#
                type:subscription
+               meta:x:@data.read/*/*/meta
+               username:x:@auth.ticket.get
 
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
