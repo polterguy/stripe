@@ -30,9 +30,23 @@ data.connect:[generic|stripe]
             subscription.eq:x:@.arguments/*/subscription
             username.eq:x:@auth.ticket.get
 
+   // Verifying subscription exists.
+   if
+      not-exists:x:@data.read/*/*/meta
+      .lambda
+
+         // Oops ...!!
+         log.error:User tried to delete a non-existent subscription
+            username:x:@auth.ticket.get
+            subscription:x:@.arguments/*/subscription
+         throw:No such subscription
+            public:true
+            status:404
+            
+
    // Verifying subscription can be deleted.
    if
-      exists:x:@data.read/*/*/meta
+      not-null:x:@data.read/*/*/meta
       .lambda
 
          // Invoking callback slots to verify subscription can be deleted.
