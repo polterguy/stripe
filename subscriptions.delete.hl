@@ -23,12 +23,25 @@ data.connect:[generic|stripe]
    // Retrieving meta for subscription, and if existing, invoking callback slots.
    data.read
       table:subscriptions
-      values
+      columns
          meta
       where
          and
             subscription.eq:x:@.arguments/*/subscription
             username.eq:x:@auth.ticket.get
+
+   // Verifying subscription can be deleted.
+   if
+      exists:x:@data.read/*/*/meta
+      .lambda
+
+         // Invoking callback slots to verify subscription can be deleted.
+         slots.vocabulary:payments.subscriptions.can-delete.
+         for-each:x:-/*
+            unwrap:x:+/*
+            signal:x:@.dp/#
+               meta:x:@data.read/*/*/meta
+               username:x:@auth.ticket.get
 
    // Invoking Stripe to cancel subscription.
    unwrap:x:+/*
