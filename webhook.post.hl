@@ -1,0 +1,8 @@
+
+/*
+ * Webhook endpoint that you can configure in your Stripe dashboard to
+ * receive notifications from Stripe as they are published.
+ */
+lambda2hyper:x:../*
+log.info:x:-
+
