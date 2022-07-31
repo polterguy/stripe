@@ -3,6 +3,34 @@
  * Webhook endpoint that you can configure in your Stripe dashboard to
  * receive notifications from Stripe as they are published.
  */
-lambda2hyper:x:../*
-log.info:x:-
+.arguments:*
 
+switch:x:@.arguments/*/type
+
+   // Charge succeeded
+   case:charge.succeeded
+
+      // Buffer object for transaction entity.
+      .transaction
+         transaction:x:@.arguments/*/id
+         amount:x:@.arguments/*/data/*/object/*/amount_captured
+         invoice:x:@.arguments/*/data/*/object/*/invoice
+         username
+      unwrap:x:-/*
+      data.connect:stripe
+         data.read
+            table:customers
+            columns
+               username
+            where
+               and
+                  customer_id.eq:x:@.arguments/*/data/*/object/*/customer
+         set-value:x:@.transaction/*/username
+            get-value:x:@data.read/*/*/username
+         data.create
+            table:transactions
+            values
+               transaction:x:@.transaction/*/transaction
+               amount:x:@.transaction/*/amount
+               invoice:x:@.transaction/*/invoice
+               username:x:@.transaction/*/username

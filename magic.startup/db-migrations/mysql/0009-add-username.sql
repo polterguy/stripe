@@ -1,0 +1,1 @@
+alter table transactions add column username varchar(256) not null

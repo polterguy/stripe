@@ -1,0 +1,1 @@
+create table transactions(transaction varchar(256) not null primary key)

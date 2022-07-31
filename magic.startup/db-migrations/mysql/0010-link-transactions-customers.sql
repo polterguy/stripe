@@ -1,0 +1,1 @@
+alter table transactions add foreign key (username) references customers (username)
