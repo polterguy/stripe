@@ -5,9 +5,11 @@
  */
 .arguments:*
 
+// Making sure we only handle relevant events.
 switch:x:@.arguments/*/type
 
-   // Charge succeeded
+   // Charge succeeded and failed. Storing type allowing us to later calculate amount.
+   case:charge.failed
    case:charge.succeeded
 
       // Buffer object for transaction entity.
@@ -16,7 +18,10 @@ switch:x:@.arguments/*/type
          amount:x:@.arguments/*/data/*/object/*/amount_captured
          invoice:x:@.arguments/*/data/*/object/*/invoice
          username
+         type:x:@.arguments/*/type
       unwrap:x:-/*
+
+      // Figuring out username transaction belongs to.
       data.connect:stripe
          data.read
             table:customers
@@ -27,6 +32,8 @@ switch:x:@.arguments/*/type
                   customer_id.eq:x:@.arguments/*/data/*/object/*/customer
          set-value:x:@.transaction/*/username
             get-value:x:@data.read/*/*/username
+
+         // Creating our transaction object
          data.create
             table:transactions
             values
@@ -34,3 +41,4 @@ switch:x:@.arguments/*/type
                amount:x:@.transaction/*/amount
                invoice:x:@.transaction/*/invoice
                username:x:@.transaction/*/username
+               type:x:@.arguments/*/type

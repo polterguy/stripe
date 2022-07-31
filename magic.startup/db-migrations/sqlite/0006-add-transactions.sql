@@ -4,5 +4,6 @@ create table transactions (
   username varchar(256) not null,
   amount integer not null,
   invoice varchar(250),
+  type varchar(100),
   foreign key (username) references customers (username)
 );
