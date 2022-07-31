@@ -19,6 +19,7 @@ switch:x:@.arguments/*/type
          invoice:x:@.arguments/*/data/*/object/*/invoice
          username
          type:x:@.arguments/*/type
+         payment_method:x:@.arguments/*/data/*/object/*/payment_method
       unwrap:x:-/*
 
       // Figuring out username transaction belongs to.
@@ -42,3 +43,4 @@ switch:x:@.arguments/*/type
                invoice:x:@.transaction/*/invoice
                username:x:@.transaction/*/username
                type:x:@.arguments/*/type
+               payment_method:x:@.transaction/*/payment_method
