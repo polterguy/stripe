@@ -20,6 +20,7 @@ switch:x:@.arguments/*/type
          username
          type:x:@.arguments/*/type
          payment_method:x:@.arguments/*/data/*/object/*/payment_method
+         affiliate
       unwrap:x:-/*
 
       // Figuring out username transaction belongs to.
@@ -34,6 +35,22 @@ switch:x:@.arguments/*/type
          set-value:x:@.transaction/*/username
             get-value:x:@data.read/*/*/username
 
+         // Figuring out affiliate for transaction, if any.
+         data.connect:[generic|magic]
+            data.read
+               table:users_extra
+               columns
+                  value
+               where
+                  and
+                     user.eq:x:@.transaction/*/username
+                     type.eq:affiliate
+            if
+               not-null:x:@data.read/*/*/value
+               .lambda
+                  set-value:x:@.transaction/*/affiliate
+                     get-value:x:@data.read/*/*/value
+
          // Creating our transaction object
          data.create
             table:transactions
@@ -44,3 +61,4 @@ switch:x:@.arguments/*/type
                username:x:@.transaction/*/username
                type:x:@.arguments/*/type
                payment_method:x:@.transaction/*/payment_method
+               affiliate:x:@.transaction/*/affiliate
