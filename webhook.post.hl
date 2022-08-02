@@ -48,6 +48,8 @@ switch:x:@.arguments/*/type
             if
                not-null:x:@data.read/*/*/value
                .lambda
+               
+                  // User transaction belongs to is associated with an affiliate.
                   set-value:x:@.transaction/*/affiliate
                      get-value:x:@data.read/*/*/value
 
