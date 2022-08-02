@@ -11,6 +11,7 @@ switch:x:@.arguments/*/type
    // Charge succeeded and failed. Storing type allowing us to later calculate amount.
    case:charge.failed
    case:charge.succeeded
+   case:charge.refunded
 
       // Buffer object for transaction entity.
       .transaction
