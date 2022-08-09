@@ -86,6 +86,7 @@ data.connect:stripe
          for-each:x:@http.get/*/content/*/data/*
             .data
                .
+                  id:x:@.dp/#/*/id
                   name:x:@.dp/#/*/customer_name
                   email:x:@.dp/#/*/customer_email
                   account_country:x:@.dp/#/*/account_country
