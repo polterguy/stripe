@@ -50,7 +50,7 @@ data.connect:stripe
          set-value:x:@.url
             strings.concat
                .:"https://api.stripe.com/v1/invoices"
-               .:"?limit=100&customer="
+               .:"?limit=10&customer="
                strings.url-encode:x:@.customer-id
          if
             exists:x:@.arguments/*/from
