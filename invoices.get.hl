@@ -4,6 +4,7 @@
  */
 .arguments
    from:string
+   status:string
 .description:Returns all invoices associated with currently authenticated user.
 .type:custom
 
@@ -52,6 +53,8 @@ data.connect:stripe
                .:"https://api.stripe.com/v1/invoices"
                .:"?limit=10&customer="
                strings.url-encode:x:@.customer-id
+               
+         // Parametrising invocation.
          if
             exists:x:@.arguments/*/from
             .lambda
@@ -60,6 +63,14 @@ data.connect:stripe
                      get-value:x:@.url
                      .:"&starting_after="
                      get-value:x:@.arguments/*/from
+         if
+            exists:x:@.arguments/*/status
+            .lambda
+               set-value:x:@.url
+                  strings.concat
+                     get-value:x:@.url
+                     .:"&status="
+                     get-value:x:@.arguments/*/status
          http.get:x:@.url
             headers
                Authorization:x:@.token
