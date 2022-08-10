@@ -26,8 +26,10 @@ slots.create:stripe.customers.create
          exists:x:@.arguments/*/ip_address
          not-null:x:@.arguments/*/ip_address
       .lambda
+         unwrap:x:+/*/*
          add:x:../*/http.post/*/payload
-            get-value:x:@.arguments/*/ip_address
+            .
+               tax.ip_address:x:@.arguments/*/ip_address
 
    // Invoking Stripe REST API.
    http.post:"https://api.stripe.com/v1/customers"
