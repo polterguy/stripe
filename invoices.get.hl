@@ -137,5 +137,3 @@ data.connect:stripe
             add:x:@.signal/./*/return
                get-nodes:x:@.data/*
          return
-return
-   result:no-customer
