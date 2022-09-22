@@ -11,7 +11,7 @@
 .description:Creates a new payment method and associates with the currently authenticated user
 
 // Sanity checking invocation.
-auth.ticket.verify:root, admin, guest
+auth.ticket.verify:root, admin, guest, impersonated
 
 // Sanity checking invocation.
 validators.mandatory:x:@.arguments/*/card_number
