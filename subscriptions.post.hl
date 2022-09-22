@@ -9,7 +9,7 @@
 .description:Creates a new subscription and associates with the currently authenticated user
 
 // Sanity checking invocation.
-auth.ticket.verify:root, admin, guest
+auth.ticket.verify:root, admin, guest, impersonated
 
 // Sanity checking invocation.
 validators.mandatory:x:@.arguments/*/price

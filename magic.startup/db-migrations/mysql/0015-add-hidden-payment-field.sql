@@ -1,0 +1,1 @@
+alter table payment_methods add column hidden bool
