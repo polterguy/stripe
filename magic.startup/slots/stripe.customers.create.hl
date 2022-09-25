@@ -32,6 +32,10 @@ slots.create:stripe.customers.create
          add:x:../*/http.post/*/payload
             .
                tax[ip_address]:x:@.arguments/*/ip_address
+   else
+      add:x:../*/http.post/*/payload
+         .
+            tax[country]:Cyprus
 
    // Invoking Stripe REST API.
    http.post:"https://api.stripe.com/v1/customers"

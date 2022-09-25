@@ -12,23 +12,6 @@ slots.create:stripe.subscriptions.create
    validators.mandatory:x:@.arguments/*/customer_id
    validators.mandatory:x:@.arguments/*/payment_method
    validators.mandatory:x:@.arguments/*/username
-   
-   // Checking is user is taxable.
-   data.connect:magic
-      data.read
-         table:users_extra
-         values
-            value
-         where
-            and
-               user.eq:x:@.arguments/*/username
-               type.eq:country
-      if
-         exists:x:@data.read/*/*
-         .lambda
-            add:x:../*/http.post/*/payload
-               .
-                  automatic_tax[enabled]:bool:true
 
    // Retrieving token to use for invocations towards Stripe.
    .token
@@ -55,6 +38,7 @@ slots.create:stripe.subscriptions.create
          customer:x:@.arguments/*/customer_id
          items[0][price]:x:@.arguments/*/price
          default_payment_method:x:@.arguments/*/payment_method
+         automatic_tax[enabled]:bool:true
       convert:true
 
    // Sanity checking above invocation.
