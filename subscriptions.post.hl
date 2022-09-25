@@ -76,6 +76,7 @@ data.connect:stripe
       customer_id:x:@.customer-id
       payment_method:x:@.arguments/*/payment_method
       price:x:@.arguments/*/price
+      username:x:@auth.ticket.get
 
    // Invoking any callback sink methods, but only if meta information was supplied.
    if
