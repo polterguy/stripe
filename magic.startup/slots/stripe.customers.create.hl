@@ -25,6 +25,8 @@ slots.create:stripe.customers.create
       and
          exists:x:@.arguments/*/ip_address
          not-null:x:@.arguments/*/ip_address
+         exists:x:@.arguments/*/country
+         not-null:x:@.arguments/*/country
       .lambda
          unwrap:x:+/*/*
          add:x:../*/http.post/*/payload

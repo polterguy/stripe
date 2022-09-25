@@ -66,6 +66,7 @@ data.connect:stripe
                         type.eq:email
                         type.eq:name
                         type.eq:registration-ip-address
+                        type.eq:country
             set-value:x:@.email
                get-value:x:@data.read/*/*/type/=email/./*/value
             set-value:x:@.name
@@ -78,6 +79,7 @@ data.connect:stripe
             name:x:@.name
             email:x:@.email
             ip_address:x:@data.connect/*/data.read/*/*/type/=registration-ip-address/./*/value
+            country:x:@data.connect/*/data.read/*/*/type/=country/./*/value
 
          // Inserting our customer object
          data.create
