@@ -11,6 +11,7 @@ slots.create:stripe.customers.create
    validators.mandatory:x:@.arguments/*/username
    validators.mandatory:x:@.arguments/*/name
    validators.mandatory:x:@.arguments/*/email
+   validators.mandatory:x:@.arguments/*/ip_address
    validators.email:x:@.arguments/*/email
 
    // Retrieving token to use for invocations towards Stripe.
@@ -19,23 +20,6 @@ slots.create:stripe.customers.create
       strings.concat
          .:"Bearer "
          config.get:"magic:stripe:token"
-
-   // Checking if IP address was supplied (needed for tax reasons)
-   if
-      and
-         exists:x:@.arguments/*/ip_address
-         not-null:x:@.arguments/*/ip_address
-         exists:x:@.arguments/*/country
-         not-null:x:@.arguments/*/country
-      .lambda
-         unwrap:x:+/*/*
-         add:x:../*/http.post/*/payload
-            .
-               tax[ip_address]:x:@.arguments/*/ip_address
-   else
-      add:x:../*/http.post/*/payload
-         .
-            tax[country]:Cyprus
 
    // Invoking Stripe REST API.
    http.post:"https://api.stripe.com/v1/customers"
@@ -47,6 +31,7 @@ slots.create:stripe.customers.create
          email:x:@.arguments/*/email
          name:x:@.arguments/*/name
          metadata[username]:x:@.arguments/*/username
+         tax[ip_address]:x:@.arguments/*/ip_address
       convert:true
 
    // Sanity checking above invocation.
