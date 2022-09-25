@@ -29,7 +29,9 @@ data.connect:[generic|stripe]
       where
          and
             username.eq:x:@auth.ticket.get
-            hidden.neq:bool:true
+            or
+               hidden.neq:bool:true
+               hidden.eq
 
    // Returning result of above read invocation to caller.
    return-nodes:x:@data.read/*
