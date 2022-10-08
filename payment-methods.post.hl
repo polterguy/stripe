@@ -53,6 +53,7 @@ data.connect:stripe
           */
          .email
          .name
+         .ip
          data.connect:magic
             data.read
                table:users_extra
@@ -70,6 +71,21 @@ data.connect:stripe
                get-value:x:@data.read/*/*/type/=email/./*/value
             set-value:x:@.name
                get-value:x:@data.read/*/*/type/=name/./*/value
+            set-value:x:@.ip
+               get-value:x:@data.read/*/*/type/=registration-ip-address/./*/value
+
+         /*
+          * Checking if we have an IP address associated with user,
+          * and if not, trying to figure out the IP address of the current
+          * request, and setting it.
+          */
+         if
+            null:x:@.ip
+            .lambda
+               set-value:x:@.ip
+                  get-first-value
+                     request.headers.get:X-Real-IP
+                     request.ip
 
          // We need to create a customer object.
          unwrap:x:+/*
@@ -77,7 +93,7 @@ data.connect:stripe
             username:x:@auth.ticket.get
             name:x:@.name
             email:x:@.email
-            ip_address:x:@data.connect/*/data.read/*/*/type/=registration-ip-address/./*/value
+            ip_address:x:@.ip
 
          // Inserting our customer object
          data.create
