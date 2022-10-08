@@ -4,7 +4,7 @@
  *
  * Requires [payment_method], [customer_id].
  */
-slots.create:strips.payment_methods.attach
+slots.create:stripe.payment_methods.attach
 
    // Sanity checking invocation.
    validators.mandatory:x:@.arguments/*/payment_method

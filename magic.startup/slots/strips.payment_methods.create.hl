@@ -4,7 +4,7 @@
  *
  * Requires [card_number], [card_exp_month], [card_exp_year], [card_cvs].
  */
-slots.create:strips.payment_methods.create
+slots.create:stripe.payment_methods.create
 
    // Sanity checking invocation.
    validators.mandatory:x:@.arguments/*/card_number
