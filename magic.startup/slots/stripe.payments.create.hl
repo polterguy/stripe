@@ -62,4 +62,3 @@ slots.create:stripe.payments.create
    unwrap:x:+/*
    return
       id:x:@http.post/*/content/*/id
-      product:x:@http.post/*/content/*/items/*/data/0/*/price/*/product
