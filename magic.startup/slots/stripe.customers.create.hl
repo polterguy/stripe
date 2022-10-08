@@ -11,8 +11,15 @@ slots.create:stripe.customers.create
    validators.mandatory:x:@.arguments/*/username
    validators.mandatory:x:@.arguments/*/name
    validators.mandatory:x:@.arguments/*/email
-   validators.mandatory:x:@.arguments/*/ip_address
    validators.email:x:@.arguments/*/email
+
+   // Checking if IP address was supplied, and if so, adding it to invocation.
+   if
+      exists:x:@.arguments/*/ip_address
+      .lambda
+         add:x:../*/http.post/*/payload
+            .
+               tax[ip_address]:x:@.arguments/*/ip_address
 
    // Retrieving token to use for invocations towards Stripe.
    .token
@@ -31,7 +38,6 @@ slots.create:stripe.customers.create
          email:x:@.arguments/*/email
          name:x:@.arguments/*/name
          metadata[username]:x:@.arguments/*/username
-         tax[ip_address]:x:@.arguments/*/ip_address
       convert:true
 
    // Sanity checking above invocation.
