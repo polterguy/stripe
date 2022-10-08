@@ -100,7 +100,7 @@ data.connect:stripe
    .payment-method
    .brand
    unwrap:x:+/*
-   signal:strips.payment_methods.create
+   signal:stripe.payment_methods.create
       card_number:x:@.arguments/*/card_number
       card_exp_month:x:@.arguments/*/card_exp_month
       card_exp_year:x:@.arguments/*/card_exp_year
@@ -117,7 +117,7 @@ data.connect:stripe
 
    // Attaching payment method with customer in Stripe.
    unwrap:x:+/*
-   signal:strips.payment_methods.attach
+   signal:stripe.payment_methods.attach
       payment_method:x:@.payment-method
       customer_id:x:@.customer-id
 
