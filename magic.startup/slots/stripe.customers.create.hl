@@ -8,7 +8,6 @@
 slots.create:stripe.customers.create
 
    // Sanity checking invocation.
-   validators.mandatory:x:@.arguments/*/username
    validators.mandatory:x:@.arguments/*/name
    validators.mandatory:x:@.arguments/*/email
    validators.email:x:@.arguments/*/email
@@ -28,6 +27,19 @@ slots.create:stripe.customers.create
          .:"Bearer "
          config.get:"magic:stripe:token"
 
+   /*
+    * Checking if username was specified, and if so
+    * adding it to Stripe invocation as meta data.
+    */
+   if
+      and
+         exists:x:@.arguments/*/username
+         not-null:x:@.arguments/*/username
+      .lambda
+         add:x:../*/http.post/*/payload
+            .
+               metadata[username]:x:@.arguments/*/username
+
    // Invoking Stripe REST API.
    http.post:"https://api.stripe.com/v1/customers"
       headers
@@ -37,7 +49,6 @@ slots.create:stripe.customers.create
          description:Aista customer
          email:x:@.arguments/*/email
          name:x:@.arguments/*/name
-         metadata[username]:x:@.arguments/*/username
       convert:true
 
    // Sanity checking above invocation.
