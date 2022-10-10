@@ -104,8 +104,10 @@ data.connect:stripe
                get-nodes:x:@.arguments/*/meta
                get-nodes:x:@.arguments/*/amount
                get-nodes:x:@.arguments/*/currency
+            unwrap:x:+/*
             signal:x:@.dp/#
                type:payment
+               username:x:@auth.ticket.get
 
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
