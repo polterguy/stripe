@@ -96,14 +96,16 @@ data.connect:stripe
       .lambda
 
          // Retrieving all slots that are interested in callback notifications.
-         slots.vocabulary:payments.subscriptions.subscribed.
+         slots.vocabulary:payments.payments.paid.
          
          // Invoking all slots returned above.
          for-each:x:-/*
             add:x:./*/signal
                get-nodes:x:@.arguments/*/meta
+               get-nodes:x:@.arguments/*/amount
+               get-nodes:x:@.arguments/*/currency
             signal:x:@.dp/#
-               subscription:payment
+               type:payment
 
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
