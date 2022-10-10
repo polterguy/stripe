@@ -94,6 +94,7 @@ data.connect:stripe
                type:subscription
                username:x:@auth.ticket.get
                price:x:@.arguments/*/price
+               completed:x:@signal/@signal/*/finished
 
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
@@ -113,8 +114,31 @@ data.connect:stripe
          product:x:@signal/*/product
          payment_method:x:@.arguments/*/payment_method
          meta:x:@.arguments/*/meta
+         completed:x:@signal/*/finished
+
+   /*
+    * Checking if charge was successful.
+    * Notice, subscriptions doesn't return an "authorisation URL"
+    * for the payment from Stripe for some reasons, andthe invoice needs to
+    * be retrieved, and the user needs to manually pay the invoice.
+    * This is obviously annoying, but I suspect it's a 3D Secure "feature".
+    *
+    * For subscriptions, we still create the subscription in the database,
+    * and invoke callback slots, etc - However, we return response to the client
+    * indicating he or she needs to pay the invoice.
+    */
+   if
+      not
+         get-value:x:@signal/*/finished
+      .lambda
+         unwrap:x:+/*
+         return
+            finished:bool:false
+            subscription:x:@signal/*/id
+            message:Please check your email and pay the invoice
 
    // Returning success to caller.
    unwrap:x:+/*
    return
+      finished:bool:true
       subscription:x:@signal/*/id

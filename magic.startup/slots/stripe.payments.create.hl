@@ -54,11 +54,24 @@ slots.create:stripe.payments.create
          log.error:Something went wrong while invoking Stripe API
             result:x:@lambda2hyper
             provider:Stripe
-         throw:We could not create your subscription
+         throw:We could not create your payment
             public:true
             status:500
+
+   // Checking if charge was successful.
+   if
+      exists:x:@http.post/*/content/*/next_action/*/use_stripe_sdk/*/stripe_js
+      .lambda
+
+         // Charge was NOT successful, and probably needs 3D secure.
+         unwrap:x:+/*
+         return
+            finished:bool:false
+            id:x:@http.post/*/content/*/id
+            payment_url:x:@http.post/*/content/*/next_action/*/use_stripe_sdk/*/stripe_js
 
    // Returning customer ID to caller.
    unwrap:x:+/*
    return
+      finished:bool:true
       id:x:@http.post/*/content/*/id

@@ -89,6 +89,7 @@ data.connect:stripe
          amount:x:@.arguments/*/amount
          currency:x:@.arguments/*/currency
          payment_method:x:@.arguments/*/payment_method
+         completed:x:@signal/*/finished
 
    // Invoking any callback sink methods, but only if meta information was supplied.
    if
@@ -108,6 +109,7 @@ data.connect:stripe
             signal:x:@.dp/#
                type:payment
                username:x:@auth.ticket.get
+               completed:x:@signal/@signal/*/finished
 
    // Checking if we've got a notifications callback, and if so, invoking it.
    config.get:"magic:stripe:notifications"
@@ -117,7 +119,19 @@ data.connect:stripe
       content:Your payment was successfully created
       username:x:@auth.ticket.get
 
+   // Checking if charge was successful.
+   if
+      not
+         get-value:x:@signal/*/finished
+      .lambda
+         unwrap:x:+/*
+         return
+            finished:bool:false
+            payment:x:@signal/*/id
+            payment_url:x:@signal/*/payment_url
+
    // Returning success to caller.
    unwrap:x:+/*
    return
+      finished:bool:true
       payment:x:@signal/*/id

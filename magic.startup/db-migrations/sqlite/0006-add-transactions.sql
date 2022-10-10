@@ -1,6 +1,6 @@
 create table transactions (
-  transaction varchar(256) primary key not null,
-  created timestamp not null default current_timestamp
+  `transaction` varchar(256) primary key not null,
+  created timestamp not null default current_timestamp,
   username varchar(256) not null,
   amount integer not null,
   invoice varchar(250),

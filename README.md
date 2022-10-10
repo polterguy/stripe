@@ -12,7 +12,8 @@ projects. the project has the following logical entities.
 
 Make sure you apply your Stripe API token as `magic:stripe:token` in your Config dashboard
 menu in Magic, then invoke the `POST` _"payment-methods"_ endpoint with something resembling
-the following.
+the following. If you want to try 3D Secure, you can use the card number _"4000002500003155"_.
+If you want to test a failed card, you can use _"4000000000009995"_.
 
 ```
 {
@@ -43,7 +44,25 @@ invocation as follows.
 }
 ```
 
-Notice, the price above needs to be manually created in Stripe's dashboard as a _"product"_.
+Notice, the above price above needs to be manually created in Stripe's dashboard as a _"product"_.
+If you want to pay a single shot payment, you can invoke the `POST` _"payments"_ endpoint
+instead, at which point you're expected to pass in something resembling the following.
+
+```
+{
+  "amount": 5555,
+  "currency": "USD",
+  "payment_method": "pm_1LsdsGSDDSFG634345GF"
+}
+```
+
+Both the _"subscriptions"_ endpoint and the _"payments"_ endpoint will return _"finished"_
+as a boolean true value if the transaction was instantly completed. The transaction might need
+authentication, such as 3D Secure, at which point the endpoint will return success status
+code, but the _"finished"_ field will have a boolean false value, at which point the client
+will either be given a direct payment link for single shot payments - Or an invoice will be
+sent to the user that the user needs to pay, and / or the client needs to retrieve the invoice
+associated with the subscription.
 
 ## Detailed usage description
 

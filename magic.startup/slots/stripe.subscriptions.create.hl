@@ -56,8 +56,28 @@ slots.create:stripe.subscriptions.create
             public:true
             status:500
 
+   /*
+    * Checking if charge was successful.
+    * Notice, Stripe does NOT return an "authentication URL" for subscriptions,
+    * for reasons I don't know, so the best we can do here, is to return finished
+    * equaling false, and just encourage user to pay the invoice he have been
+    * given on email.
+    */
+   if
+      eq:x:@http.post/*/content/*/status
+         .:incomplete
+      .lambda
+
+         // Charge was NOT successful, and probably needs 3D secure
+         unwrap:x:+/*
+         return
+            finished:bool:false
+            id:x:@http.post/*/content/*/id
+            product:x:@http.post/*/content/*/items/*/data/0/*/price/*/product
+
    // Returning customer ID to caller.
    unwrap:x:+/*
    return
+      finished:bool:true
       id:x:@http.post/*/content/*/id
       product:x:@http.post/*/content/*/items/*/data/0/*/price/*/product
