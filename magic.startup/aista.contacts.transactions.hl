@@ -15,6 +15,7 @@ slots.create:aista.contacts.transactions
             amount
             invoice
             type
+            created
          where
             and
                username.eq:x:@.arguments/*/meta
