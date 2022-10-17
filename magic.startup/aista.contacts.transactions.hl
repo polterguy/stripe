@@ -1,0 +1,25 @@
+
+/*
+ * Plugin slot returning transactions associated with user.
+ */
+slots.create:aista.contacts.transactions
+
+   // Sanity checking invocation.
+   validators.mandatory:x:@.arguments/*/meta
+
+   // Returning cloudlets associated with user.
+   data.connect:stripe
+      data.read
+         table:transactions
+         columns
+            amount
+            invoice
+            type
+         where
+            and
+               username.eq:x:@.arguments/*/meta
+      add:x:./*/return/*/items
+         get-nodes:x:@data.read/*
+      return
+         title:Transactions
+         items
