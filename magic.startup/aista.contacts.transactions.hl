@@ -19,6 +19,8 @@ slots.create:aista.contacts.transactions
          where
             and
                username.eq:x:@.arguments/*/meta
+         order:created
+         direction:desc
       add:x:./*/return/*/items
          get-nodes:x:@data.read/*
       return
