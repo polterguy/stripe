@@ -10,7 +10,7 @@
 .type:crud-delete
 
 // Verifying user is authorized to access endpoint.
-auth.ticket.verify:root, admin
+auth.ticket.verify:root, admin, account_manager
 
 // Sanity checking invocation.
 validators.mandatory:x:@.arguments/*/subscription
