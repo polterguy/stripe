@@ -4,25 +4,33 @@
  */
 slots.create:aista.contacts.transactions
 
-   // Sanity checking invocation.
-   validators.mandatory:x:@.arguments/*/meta
+   // Making sure we've got a [meta] argument.
+   if
+      and
+         exists:x:@.arguments/*/meta
+         not-null:x:@.arguments/*/meta
+         neq:x:@.arguments/*/meta
+            .:
+      .lambda
 
-   // Returning cloudlets associated with user.
-   data.connect:stripe
-      data.read
-         table:transactions
-         columns
-            amount
-            invoice
-            type
-            created
-         where
-            and
-               username.eq:x:@.arguments/*/meta
-         order:created
-         direction:desc
-      add:x:./*/return/*/items
-         get-nodes:x:@data.read/*
-      return
-         title:Transactions
-         items
+         // Returning cloudlets associated with user.
+         data.connect:stripe
+            data.read
+               table:transactions
+               columns
+                  amount
+                  invoice
+                  type
+                  created
+               where
+                  and
+                     username.eq:x:@.arguments/*/meta
+               order:created
+               direction:desc
+            add:x:./*/return/*/items
+               get-nodes:x:@data.read/*
+            return
+               title:Transactions
+               items
+   return
+      title:Transactions
