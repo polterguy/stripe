@@ -26,7 +26,7 @@ auth.ticket.get
  * Opening up a database connection to our stripe database, since we want to store
  * values associating the username with stripe internal data as we proceed.
  */
-data.connect:stripe
+data.connect:[generic|stripe]
 
    // Will contain customer-id reference from Stripe's systems.
    .customer-id
@@ -54,7 +54,7 @@ data.connect:stripe
          .email
          .name
          .ip
-         data.connect:magic
+         data.connect:[generic|magic]
             data.read
                table:users_extra
                values

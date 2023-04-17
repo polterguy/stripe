@@ -25,7 +25,7 @@ switch:x:@.arguments/*/type
       unwrap:x:-/*
 
       // Figuring out username transaction belongs to.
-      data.connect:stripe
+      data.connect:[generic|stripe]
          data.read
             table:customers
             columns

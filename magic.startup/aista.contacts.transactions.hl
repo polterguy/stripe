@@ -14,7 +14,7 @@ slots.create:aista.contacts.transactions
       .lambda
 
          // Returning cloudlets associated with user.
-         data.connect:stripe
+         data.connect:[generic|stripe]
             data.read
                table:transactions
                columns

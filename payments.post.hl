@@ -24,7 +24,7 @@ auth.ticket.get
  * Opening up a database connection to our stripe database, since we want to store
  * values associating the username with stripe internal data as we proceed.
  */
-data.connect:stripe
+data.connect:[generic|stripe]
 
    // Will contain customer-id and payment method reference in Stripe's systems.
    .customer-id

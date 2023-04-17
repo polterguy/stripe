@@ -21,7 +21,7 @@ validators.mandatory:x:@.arguments/*/payment_method
 auth.ticket.get
 
 // Opening up our database connection.
-data.connect:stripe
+data.connect:[generic|stripe]
 
    // Deleting item from database.
    data.delete
