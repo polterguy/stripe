@@ -33,35 +33,46 @@ switch:x:@.arguments/*/type
             where
                and
                   customer_id.eq:x:@.arguments/*/data/*/object/*/customer
-         set-value:x:@.transaction/*/username
-            get-value:x:@data.read/*/*/username
 
-         // Figuring out affiliate for transaction, if any.
-         data.connect:[generic|magic]
-            data.read
-               table:users_extra
-               columns
-                  value
-               where
-                  and
-                     user.eq:x:@.transaction/*/username
-                     type.eq:affiliate
-            if
-               not-null:x:@data.read/*/*/value
-               .lambda
+         /*
+          * Notice, some payments will NOT be associated with users, because they
+          * were manually created subscriptions or payments, at which point we cannot
+          * associate the payment with a user in our own internals systems.
+          */
+         if
+            exists:x:@data.read/*/*/username
+            .lambda
 
-                  // User transaction belongs to is associated with an affiliate.
-                  set-value:x:@.transaction/*/affiliate
-                     get-value:x:@data.read/*/*/value
+               // We have an existing customer record associated with the payment
+               set-value:x:@.transaction/*/username
+                  get-value:x:@data.read/*/*/username
 
-         // Creating our transaction object
-         data.create
-            table:transactions
-            values
-               transaction:x:@.transaction/*/transaction
-               amount:x:@.transaction/*/amount
-               invoice:x:@.transaction/*/invoice
-               username:x:@.transaction/*/username
-               type:x:@.arguments/*/type
-               payment_method:x:@.transaction/*/payment_method
-               affiliate:x:@.transaction/*/affiliate
+               // Figuring out affiliate for transaction, if any.
+               data.connect:[generic|magic]
+                  data.read
+                     table:users_extra
+                     columns
+                        value
+                     where
+                        and
+                           user.eq:x:@.transaction/*/username
+                           type.eq:affiliate
+                  if
+                     not-null:x:@data.read/*/*/value
+                     .lambda
+
+                        // User transaction belongs to is associated with an affiliate.
+                        set-value:x:@.transaction/*/affiliate
+                           get-value:x:@data.read/*/*/value
+
+               // Creating our transaction object
+               data.create
+                  table:transactions
+                  values
+                     transaction:x:@.transaction/*/transaction
+                     amount:x:@.transaction/*/amount
+                     invoice:x:@.transaction/*/invoice
+                     username:x:@.transaction/*/username
+                     type:x:@.arguments/*/type
+                     payment_method:x:@.transaction/*/payment_method
+                     affiliate:x:@.transaction/*/affiliate
