@@ -1,6 +1,6 @@
 
 /*
- * Stripe integration allowing users to purchase a subscription type of product.
+ * Stripe integration allowing users to create a new payment method and associate it with their user.
  */
 .arguments
    card_number:string
