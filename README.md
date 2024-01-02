@@ -139,6 +139,17 @@ Notice, the above token is (obviously) just some random garbage. You'll have to 
 Stripe dashboard to actually retrieve your real token. If you use your test token, the payment
 will automatically be created in Stripe's sandbox environment if you want to test your integration.
 
+## Workflow actions
+
+In addition to the above endpoints and helper slots, the module also contains a handful of Stripe related
+workflow actions you can chain together to create your own custom logic. Below is a list of these.
+
+* stripe-create-customer - Creates a new customer in Stripe
+* stripe-create-payment-method - Creates a new payment method and associates with some customer
+* stripe-create-payment - Creates a new payment for the specified amount
+* stripe-create-purchase-link - Creates a purchase link and returns to caller
+* stripe-create-subscription - Creates a new subscription based upon a price reference
+
 ## Database support
 
 The library supports MySQL and PostgreSQL _only_.
