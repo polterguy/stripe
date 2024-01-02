@@ -37,6 +37,8 @@ set-value:x:-
 // Multiplying [amount] with 100 to correctly add decimals.
 math.multiply:x:@.arguments/*/amount
    .:decimal:100
+convert:x:@math.multiply
+   type:int
 
 // Invoking Stripe REST API.
 http.post:"https://api.stripe.com/v1/payment_intents"
@@ -44,7 +46,7 @@ http.post:"https://api.stripe.com/v1/payment_intents"
       Content-Type:application/x-www-form-urlencoded
       Authorization:x:@.token
    payload
-      amount:x:@math.multiply
+      amount:x:@convert
       currency:x:@.arguments/*/currency
       payment_method:x:@.arguments/*/payment_method
       customer:x:@.arguments/*/customer_id
