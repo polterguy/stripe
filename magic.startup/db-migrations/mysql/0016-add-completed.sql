@@ -1,1 +1,0 @@
-alter table subscriptions add column completed bool default true

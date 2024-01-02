@@ -1,1 +1,0 @@
-alter table transactions add column amount integer not null
