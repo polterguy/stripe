@@ -40,6 +40,15 @@ math.multiply:x:@.arguments/*/amount
 convert:x:@math.multiply
    type:int
 
+// Creating security meta data information such that we can verify it in our webhook later.
+strings.concat
+   get-value:x:@.arguments/*/customer_id
+   .:.
+   config.get:"magic:auth:secret"
+.secret
+set-value:x:@.secret
+   crypto.hash.sha256:x:@strings.concat
+
 // Invoking Stripe REST API.
 http.post:"https://api.stripe.com/v1/payment_intents"
    headers
@@ -51,6 +60,7 @@ http.post:"https://api.stripe.com/v1/payment_intents"
       payment_method:x:@.arguments/*/payment_method_id
       customer:x:@.arguments/*/customer_id
       confirm:true
+      metadata[secret]:x:@.secret
    convert:true
 
 // Sanity checking above invocation.
