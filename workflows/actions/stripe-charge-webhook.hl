@@ -17,6 +17,10 @@
  * payment was created using one of the other actions in the Stripe module. If the payment
  * was for instance manually created, or created some other way, [verified] will be false,
  * but the payment might still be valid.
+ *
+ * Notice, the [type] returned from this action will have the value of "charge.succeeded"
+ * if the charge was a success, otherwise it will have one of the values as documented
+ * by Stripe's documentation.
  */
 .arguments
    customer_id
