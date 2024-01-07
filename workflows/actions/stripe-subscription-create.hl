@@ -1,7 +1,7 @@
 
 /*
  * Creates a new Stripe payment for the given [customer_id] using the
- * specified [payment_method], for the given [amount] in the given [currency].
+ * specified [payment_method_id], for the given [amount] in the given [currency].
  *
  * Will use your Stripe API token found from your settings as it's interacting
  * with the Stripe API.
@@ -14,10 +14,10 @@
    customer_id
       type:string
       mandatory:bool:true
-   payment_method
+   payment_method_id
       type:int
       mandatory:bool:true
-   price
+   price_id
       type:string
       mandatory:bool:true
    automatic_tax
@@ -26,8 +26,8 @@
 
 // Sanity checking invocation.
 validators.mandatory:x:@.arguments/*/customer_id
-validators.mandatory:x:@.arguments/*/payment_method
-validators.mandatory:x:@.arguments/*/price
+validators.mandatory:x:@.arguments/*/payment_method_id
+validators.mandatory:x:@.arguments/*/price_id
 validators.default:x:@.arguments
    automatic_tax:bool:true
 
@@ -69,8 +69,8 @@ http.post:"https://api.stripe.com/v1/subscriptions"
       Authorization:x:@.token
    payload
       customer:x:@.arguments/*/customer_id
-      items[0][price]:x:@.arguments/*/price
-      default_payment_method:x:@.arguments/*/payment_method
+      items[0][price]:x:@.arguments/*/price_id
+      default_payment_method:x:@.arguments/*/payment_method_id
       automatic_tax[enabled]:x:@.arguments/*/automatic_tax
       metadata[secret]:x:@.secret
    convert:true
