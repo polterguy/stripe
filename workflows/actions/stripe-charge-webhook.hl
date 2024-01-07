@@ -33,6 +33,10 @@
       type:string
       mandatory:bool:true
       default:":x:@.arguments/*/data/*/object/*/receipt_url"
+   type
+      type:string
+      mandatory:bool:true
+      default:":x:@.arguments/*/type
 .icon:payment
 
 // Sanity checking invocation.
@@ -42,6 +46,18 @@ validators.mandatory:x:@.arguments/*/amount
 validators.mandatory:x:@.arguments/*/currency
 validators.mandatory:x:@.arguments/*/receipt_url
 
+/*
+ * Used to track if payment is verified or not.
+ *
+ * Notice, we can only verify payments that have the correct meta data, which this module automatically
+ * takes care of as it is creating customers, but will NOT be the case for payment links, or payments
+ * that were somehow created outside of this module.
+ *
+ * This implies you might have to manually verify a payment if it was created with something else than
+ * through a "stripe-payment-create" action.
+ */
+.valid:bool:false
+
 // Hashing customer_id + auth.secret to verify webhook invocation was legitimate.
 strings.concat
    get-value:x:@.arguments/*/customer_id
@@ -50,13 +66,14 @@ strings.concat
 
 // Verifying secret argument.
 if
-   neq:x:@strings.value
+   eq
+      crypto.hash.sha256:x:@strings.concat
       get-value:x:@.arguments/*/secret
    .lambda
 
-      // NOT a valid webhook invocation.
-      return
-         valid:bool:false
+      // Not a verified payment.
+      set-value:x:@.valid
+         .:bool:true
 
 // Converting amount to decimal and dividing by 100.
 math.divide
@@ -66,8 +83,9 @@ math.divide
 
 // Returning result to caller.
 yield
-   valid:bool:true
+   valid:x:@.valid
    customer_id:x:@.arguments/*/customer_id
    amount:x:@math.divide
    currency:x:@.arguments/*/currency
    receipt_url:x:@.arguments/*/receipt_url
+   type:x:@.arguments/*/type
