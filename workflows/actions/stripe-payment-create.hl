@@ -23,8 +23,6 @@
    currency
       type:string
       mandatory:bool:true
-   automatic_tax
-      type:bool
 .icon:payment
 
 // Sanity checking invocation.
@@ -81,7 +79,6 @@ http.post:"https://api.stripe.com/v1/payment_intents"
       payment_method:x:@.arguments/*/payment_method_id
       customer:x:@.arguments/*/customer_id
       confirm:bool:true
-      automatic_tax[enabled]:x:@.arguments/*/automatic_tax
       metadata[secret]:x:@.secret
    convert:true
 
