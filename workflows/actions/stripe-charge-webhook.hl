@@ -21,6 +21,14 @@
       type:string
       mandatory:bool:true
       default:":x:@.arguments/*/data/*/object/*/metadata/*/secret"
+   email
+      type:string
+      mandatory:bool:true
+      default:":x:@.arguments/*/data/*/object/*/billing_details/*/email"
+   name
+      type:string
+      mandatory:bool:true
+      default:":x:@.arguments/*/data/*/object/*/billing_details/*/name"
    amount
       type:string
       mandatory:bool:true
@@ -41,7 +49,6 @@
 
 // Sanity checking invocation.
 validators.mandatory:x:@.arguments/*/customer_id
-validators.mandatory:x:@.arguments/*/secret
 validators.mandatory:x:@.arguments/*/amount
 validators.mandatory:x:@.arguments/*/currency
 validators.mandatory:x:@.arguments/*/receipt_url
@@ -55,8 +62,11 @@ validators.mandatory:x:@.arguments/*/receipt_url
  *
  * This implies you might have to manually verify a payment if it was created with something else than
  * through a "stripe-payment-create" action.
+ *
+ * And the verification process will ONLY work if it originated from the same server, and/or a server
+ * that has the same "magic:auth:secret" value, since this is used as a secret during hashing.
  */
-.valid:bool:false
+.verified:bool:false
 
 // Hashing customer_id + auth.secret to verify webhook invocation was legitimate.
 strings.concat
@@ -72,7 +82,7 @@ if
    .lambda
 
       // Not a verified payment.
-      set-value:x:@.valid
+      set-value:x:@.verified
          .:bool:true
 
 // Converting amount to decimal and dividing by 100.
@@ -83,7 +93,7 @@ math.divide
 
 // Returning result to caller.
 yield
-   valid:x:@.valid
+   valid:x:@.verified
    customer_id:x:@.arguments/*/customer_id
    amount:x:@math.divide
    currency:x:@.arguments/*/currency
