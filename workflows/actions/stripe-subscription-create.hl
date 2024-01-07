@@ -38,6 +38,15 @@ set-value:x:-
       .:"Bearer "
       config.get:"magic:stripe:token"
 
+// Creating security meta data information such that we can verify it in our webhook later.
+strings.concat
+   get-value:x:@.arguments/*/customer_id
+   .:.
+   config.get:"magic:auth:secret"
+.secret
+set-value:x:@.secret
+   crypto.hash.sha256:x:@strings.concat
+
 /*
  * Checking if we've got an authenticated user, and if so, we associate it with the request
  * as metadata.
@@ -63,6 +72,7 @@ http.post:"https://api.stripe.com/v1/subscriptions"
       items[0][price]:x:@.arguments/*/price
       default_payment_method:x:@.arguments/*/payment_method
       automatic_tax[enabled]:x:@.arguments/*/automatic_tax
+      metadata[secret]:x:@.secret
    convert:true
 
 // Sanity checking above invocation.

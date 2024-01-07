@@ -5,6 +5,10 @@
  *
  * Will use your Stripe API token found from your settings as it's interacting
  * with the Stripe API.
+ *
+ * Notice, [automatic_tax] will only work if customer has a valid tax location,
+ * which can be accomplished by retrieving IP address as you create the customer,
+ * and pass in to Stripe.
  */
 .arguments
    customer_id
@@ -19,6 +23,8 @@
    currency
       type:string
       mandatory:bool:true
+   automatic_tax
+      type:bool
 .icon:payment
 
 // Sanity checking invocation.
@@ -74,7 +80,8 @@ http.post:"https://api.stripe.com/v1/payment_intents"
       currency:x:@.arguments/*/currency
       payment_method:x:@.arguments/*/payment_method_id
       customer:x:@.arguments/*/customer_id
-      confirm:true
+      confirm:bool:true
+      automatic_tax[enabled]:x:@.arguments/*/automatic_tax
       metadata[secret]:x:@.secret
    convert:true
 
