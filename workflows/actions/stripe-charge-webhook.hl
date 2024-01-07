@@ -36,7 +36,7 @@
    type
       type:string
       mandatory:bool:true
-      default:":x:@.arguments/*/type
+      default:":x:@.arguments/*/type"
 .icon:payment
 
 // Sanity checking invocation.
