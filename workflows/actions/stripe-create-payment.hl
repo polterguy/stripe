@@ -10,8 +10,8 @@
    customer_id
       type:string
       mandatory:bool:true
-   payment_method
-      type:int
+   payment_method_id
+      type:string
       mandatory:bool:true
    amount
       type:decimal
@@ -23,7 +23,7 @@
 
 // Sanity checking invocation.
 validators.mandatory:x:@.arguments/*/customer_id
-validators.mandatory:x:@.arguments/*/payment_method
+validators.mandatory:x:@.arguments/*/payment_method_id
 validators.mandatory:x:@.arguments/*/amount
 validators.mandatory:x:@.arguments/*/currency
 
@@ -48,7 +48,7 @@ http.post:"https://api.stripe.com/v1/payment_intents"
    payload
       amount:x:@convert
       currency:x:@.arguments/*/currency
-      payment_method:x:@.arguments/*/payment_method
+      payment_method:x:@.arguments/*/payment_method_id
       customer:x:@.arguments/*/customer_id
       confirm:true
    convert:true

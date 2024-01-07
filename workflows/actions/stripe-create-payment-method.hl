@@ -8,20 +8,20 @@
  * with the Stripe API.
  */
 .arguments
-   card_number
+   customer_id
       type:string
       mandatory:bool:true
-   card_exp_month
-      type:int
+   card_number
+      type:string
       mandatory:bool:true
    card_exp_year
       type:int
       mandatory:bool:true
-   card_cvs
+   card_exp_month
       type:int
       mandatory:bool:true
-   customer_id
-      type:string
+   card_cvs
+      type:int
       mandatory:bool:true
 .icon:payment
 
