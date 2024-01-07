@@ -1,22 +1,32 @@
 
 /*
- * Charge webhook helper action, allowing you to embed into a Stripe webhook, verify a charge,
- * and extract its most important information.
+ * Charge POST webhook helper action, allowing you to embed into a Stripe webhook,
+ * to verify a charge, and extract its most important information.
  *
  * Requires payment/subscription to have been created using this module, since
  * it relies upon "metadata.secret" to be able to verify payment. The action will
- * return [valid] as true if the webhook invocation is legitimate according to
+ * return [verified] as true if the webhook invocation is legitimate according to
  * the metadata.secret argument, otherwise it will return false.
  *
- * DO NOT change the expressions for [customer_id], [secret] and [amount] since the validation
+ * DO NOT change the default expressions that already have values since the validation
  * logic depends upon these retrieving these from the [.arguments] collection that's
  * provided by Stripe as it invokes our webhook.
+ *
+ * Notice, a charge might still be valid, even though the action return [verified] as
+ * false, since the webhook will only have the [metadata]/[secret] argument if the
+ * payment was created using one of the other actions in the Stripe module. If the payment
+ * was for instance manually created, or created some other way, [verified] will be false,
+ * but the payment might still be valid.
  */
 .arguments
    customer_id
       type:string
       mandatory:bool:true
       default:":x:@.arguments/*/data/*/object/*/customer"
+   username
+      type:string
+      mandatory:bool:true
+      default:":x:@.arguments/*/data/*/object/*/metadata/*/username"
    secret
       type:string
       mandatory:bool:true
@@ -93,9 +103,10 @@ math.divide
 
 // Returning result to caller.
 yield
-   valid:x:@.verified
+   verified:x:@.verified
    customer_id:x:@.arguments/*/customer_id
    amount:x:@math.divide
    currency:x:@.arguments/*/currency
    receipt_url:x:@.arguments/*/receipt_url
    type:x:@.arguments/*/type
+   username:x:@.arguments/*/username

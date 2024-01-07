@@ -49,6 +49,21 @@ strings.concat
 set-value:x:@.secret
    crypto.hash.sha256:x:@strings.concat
 
+/*
+ * Checking if we've got an authenticated user, and if so, we associate it with the request
+ * as metadata.
+ */
+auth.ticket.get
+if
+   not-null:x:@auth.ticket.get
+   .lambda
+
+      // Adding username as metadata to request
+      unwrap:x:+/*/*
+      add:x:../*/http.post/*/payload
+         .
+            metadata[username]:x:@auth.ticket.get
+
 // Invoking Stripe REST API.
 http.post:"https://api.stripe.com/v1/payment_intents"
    headers
