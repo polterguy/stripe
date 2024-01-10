@@ -1,0 +1,51 @@
+
+/*
+ * Deletes the existing Stripe subscription for the given [subscription_id].
+ *
+ * Will use your Stripe API token found from your settings as it's interacting
+ * with the Stripe API.
+ */
+.arguments
+   subscription_id
+      type:string
+      mandatory:bool:true
+.icon:payment
+
+// Sanity checking invocation.
+validators.mandatory:x:@.arguments/*/subscription_id
+
+// Retrieving token to use for invocations towards Stripe.
+.token
+set-value:x:-
+   strings.concat
+      .:"Bearer "
+      config.get:"magic:stripe:token"
+
+// Creating our REST URL.
+.url
+set-value:x:@.url
+   strings.concat
+      .:"https://api.stripe.com/v1/subscriptions/"
+      get-value:x:@.arguments/*/subscription_id
+
+// Invoking Stripe REST API.
+http.delete:x:@.url
+   headers
+      Authorization:x:@.token
+   convert:true
+
+// Sanity checking above invocation.
+if
+   mte
+      get-value:x:@http.delete
+      .:int:400
+   .lambda
+
+      // Oops, something went wrong ...!!
+      lambda2hyper:x:@http.post
+      log.error:Something went wrong while invoking Stripe API to delete subscription
+         result:x:@lambda2hyper
+         provider:Stripe
+      throw:Something went wrong while invoking Stripe API to delete subscription
+         public:true
+         status:500

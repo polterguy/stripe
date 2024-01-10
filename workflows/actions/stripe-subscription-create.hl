@@ -1,14 +1,16 @@
 
 /*
- * Creates a new Stripe payment for the given [customer_id] using the
- * specified [payment_method_id], for the given [amount] in the given [currency].
+ * Creates a new Stripe subscription for the given [customer_id] using the
+ * specified [payment_method_id], for the given [price_id], which is a reference
+ * to a Stripe product price.
  *
  * Will use your Stripe API token found from your settings as it's interacting
  * with the Stripe API.
  *
- * Notice, [automatic_tax] will only work if customer has a valid tax location,
- * which can be accomplished by retrieving IP address as you create the customer,
- * and pass in to Stripe.
+ * Notice, [automatic_tax] as true will only work if customer has a valid tax location.
+ * This can be accomplished by retrieving IP address as you create the customer,
+ * and pass in to Stripe, allowing Stripe to automatically calculate tax location based upon
+ * the customer's IP address.
  */
 .arguments
    customer_id
