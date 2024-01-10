@@ -3,7 +3,7 @@
  * Creates a customer object in Stripe with the given [name], [email] and
  * optionally [ip_address].
  *
- * If you supply an [ip_address] the country of origin for the IP address
+ * If you supply an [ip_address], the country of origin for the IP address
  * will be used as the default tax location for your customer in Stripe.
  *
  * Will use your Stripe API token found from your settings as it's interacting
@@ -42,21 +42,6 @@ set-value:x:-
    strings.concat
       .:"Bearer "
       config.get:"magic:stripe:token"
-
-/*
- * Checking if we've got an authenticated user, and if so, we associate it with the request
- * as metadata.
- */
-auth.ticket.get
-if
-   not-null:x:@auth.ticket.get
-   .lambda
-
-      // Adding username as metadata to request
-      unwrap:x:+/*/*
-      add:x:../*/http.post/*/payload
-         .
-            metadata[username]:x:@auth.ticket.get
 
 // Invoking Stripe REST API.
 http.post:"https://api.stripe.com/v1/customers"

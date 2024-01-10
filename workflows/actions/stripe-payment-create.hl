@@ -1,14 +1,10 @@
 
 /*
- * Creates a new Stripe payment for the given [customer_id] using the
- * specified [payment_method], for the given [amount] in the given [currency].
+ * Creates a new Stripe payment for the given [customer_id], using the
+ * specified [payment_method], for the given [amount], in the given [currency].
  *
  * Will use your Stripe API token found from your settings as it's interacting
  * with the Stripe API.
- *
- * Notice, [automatic_tax] will only work if customer has a valid tax location,
- * which can be accomplished by retrieving IP address as you create the customer,
- * and pass in to Stripe.
  */
 .arguments
    customer_id
@@ -38,35 +34,11 @@ set-value:x:-
       .:"Bearer "
       config.get:"magic:stripe:token"
 
-// Multiplying [amount] with 100 to correctly add decimals.
+// Multiplying [amount] with 100 to correctly remove decimals.
 math.multiply:x:@.arguments/*/amount
    .:decimal:100
 convert:x:@math.multiply
    type:int
-
-// Creating security meta data information such that we can verify it in our webhook later.
-strings.concat
-   get-value:x:@.arguments/*/customer_id
-   .:.
-   config.get:"magic:auth:secret"
-.secret
-set-value:x:@.secret
-   crypto.hash.sha256:x:@strings.concat
-
-/*
- * Checking if we've got an authenticated user, and if so, we associate it with the request
- * as metadata.
- */
-auth.ticket.get
-if
-   not-null:x:@auth.ticket.get
-   .lambda
-
-      // Adding username as metadata to request
-      unwrap:x:+/*/*
-      add:x:../*/http.post/*/payload
-         .
-            metadata[username]:x:@auth.ticket.get
 
 // Invoking Stripe REST API.
 http.post:"https://api.stripe.com/v1/payment_intents"
@@ -79,7 +51,6 @@ http.post:"https://api.stripe.com/v1/payment_intents"
       payment_method:x:@.arguments/*/payment_method_id
       customer:x:@.arguments/*/customer_id
       confirm:bool:true
-      metadata[secret]:x:@.secret
    convert:true
 
 // Sanity checking above invocation.

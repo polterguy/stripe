@@ -1,6 +1,6 @@
 
 /*
- * Creates a new Stripe subscription for the given [customer_id] using the
+ * Creates a new Stripe subscription for the given [customer_id], using the
  * specified [payment_method_id], for the given [price_id], which is a reference
  * to a Stripe product price.
  *
@@ -24,6 +24,7 @@
       mandatory:bool:true
    automatic_tax
       type:bool
+      default:bool:false
 .icon:payment
 
 // Sanity checking invocation.
@@ -31,7 +32,7 @@ validators.mandatory:x:@.arguments/*/customer_id
 validators.mandatory:x:@.arguments/*/payment_method_id
 validators.mandatory:x:@.arguments/*/price_id
 validators.default:x:@.arguments
-   automatic_tax:bool:true
+   automatic_tax:bool:false
 
 // Retrieving token to use for invocations towards Stripe.
 .token
@@ -39,30 +40,6 @@ set-value:x:-
    strings.concat
       .:"Bearer "
       config.get:"magic:stripe:token"
-
-// Creating security meta data information such that we can verify it in our webhook later.
-strings.concat
-   get-value:x:@.arguments/*/customer_id
-   .:.
-   config.get:"magic:auth:secret"
-.secret
-set-value:x:@.secret
-   crypto.hash.sha256:x:@strings.concat
-
-/*
- * Checking if we've got an authenticated user, and if so, we associate it with the request
- * as metadata.
- */
-auth.ticket.get
-if
-   not-null:x:@auth.ticket.get
-   .lambda
-
-      // Adding username as metadata to request
-      unwrap:x:+/*/*
-      add:x:../*/http.post/*/payload
-         .
-            metadata[username]:x:@auth.ticket.get
 
 // Invoking Stripe REST API.
 http.post:"https://api.stripe.com/v1/subscriptions"
@@ -74,7 +51,6 @@ http.post:"https://api.stripe.com/v1/subscriptions"
       items[0][price]:x:@.arguments/*/price_id
       default_payment_method:x:@.arguments/*/payment_method_id
       automatic_tax[enabled]:x:@.arguments/*/automatic_tax
-      metadata[secret]:x:@.secret
    convert:true
 
 // Sanity checking above invocation.

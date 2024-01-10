@@ -26,11 +26,11 @@
 .icon:payment
 
 // Sanity checking invocation.
+validators.mandatory:x:@.arguments/*/customer_id
 validators.mandatory:x:@.arguments/*/card_number
 validators.mandatory:x:@.arguments/*/card_exp_month
 validators.mandatory:x:@.arguments/*/card_exp_year
 validators.mandatory:x:@.arguments/*/card_cvs
-validators.mandatory:x:@.arguments/*/customer_id
 
 // Retrieving token to use for invocations towards Stripe.
 .token
