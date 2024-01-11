@@ -17,6 +17,8 @@
    success_url
       type:string
       mandatory:bool:true
+   metadata
+      type:key-value
 .icon:payment
 
 // Sanity checking invocation.
@@ -26,6 +28,18 @@ validators.mandatory:x:@.arguments/*/success_url
 // Applying default values.
 validators.default:x:@.arguments
    quantity:int:1
+
+// Adding metadata
+for-each:x:@.arguments/*/metadata/*
+   set-name:x:./0/-/*/*
+      strings.concat
+         .:metadata[
+         get-name:x:@.dp/#
+         .:]
+   unwrap:x:./0/-/*/*
+   add:x:../*/http.post/*/payload
+      .
+         name:x:@.dp/#
 
 // Retrieving Stripe token from configuration.
 .token

@@ -1,0 +1,59 @@
+
+/*
+ * Refunds the specified [charge_id].
+ *
+ * Will use your Stripe API token found from your settings as it's interacting
+ * with the Stripe API.
+ */
+.arguments
+   payment_intent_id
+      type:string
+      mandatory:bool:true
+.icon:payment
+
+// Sanity checking invocation.
+validators.mandatory:x:@.arguments/*/payment_intent_id
+
+// Adding metadata.
+for-each:x:@.arguments/*/metadata/*
+   set-name:x:./0/-/*/*
+      strings.concat
+         .:metadata[
+         get-name:x:@.dp/#
+         .:]
+   unwrap:x:./0/-/*/*
+   add:x:../*/http.post/*/payload
+      .
+         name:x:@.dp/#
+
+// Retrieving token to use for invocations towards Stripe.
+.token
+set-value:x:-
+   strings.concat
+      .:"Bearer "
+      config.get:"magic:stripe:token"
+
+// Invoking Stripe REST API.
+http.post:"https://api.stripe.com/v1/refunds"
+   headers
+      Authorization:x:@.token
+      Content-Type:application/x-www-form-urlencoded
+   convert:true
+   payload
+      payment_intent:x:@.arguments/*/payment_intent_id
+
+// Sanity checking above invocation.
+if
+   mte
+      get-value:x:@http.delete
+      .:int:400
+   .lambda
+
+      // Oops, something went wrong ...!!
+      lambda2hyper:x:@http.post
+      log.error:Something went wrong while invoking Stripe API to delete subscription
+         result:x:@lambda2hyper
+         provider:Stripe
+      throw:Something went wrong while invoking Stripe API to delete subscription
+         public:true
+         status:500

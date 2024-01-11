@@ -19,6 +19,14 @@
    currency
       type:string
       mandatory:bool:true
+   description
+      type:string
+      mandatory:bool:false
+   return_url
+      type:string
+      mandatory:bool:false
+   metadata
+      type:key-value
 .icon:payment
 
 // Sanity checking invocation.
@@ -26,6 +34,18 @@ validators.mandatory:x:@.arguments/*/customer_id
 validators.mandatory:x:@.arguments/*/payment_method_id
 validators.mandatory:x:@.arguments/*/amount
 validators.mandatory:x:@.arguments/*/currency
+
+// Adding metadata.
+for-each:x:@.arguments/*/metadata/*
+   set-name:x:./0/-/*/*
+      strings.concat
+         .:metadata[
+         get-name:x:@.dp/#
+         .:]
+   unwrap:x:./0/-/*/*
+   add:x:../*/http.post/*/payload
+      .
+         name:x:@.dp/#
 
 // Retrieving token to use for invocations towards Stripe.
 .token
@@ -39,6 +59,11 @@ math.multiply:x:@.arguments/*/amount
    .:decimal:100
 convert:x:@math.multiply
    type:int
+
+// Adding description if caller provided it.
+add:x:./*/http.post/*/payload
+   get-nodes:x:@.arguments/*/description
+   get-nodes:x:@.arguments/*/return_url
 
 // Invoking Stripe REST API.
 http.post:"https://api.stripe.com/v1/payment_intents"

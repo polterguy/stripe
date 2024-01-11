@@ -19,6 +19,8 @@
    ip_address
       type:string
       mandatory:bool:false
+   metadata
+      type:key-value
 .icon:payment
 
 // Sanity checking invocation.
@@ -35,6 +37,18 @@ if
       add:x:../*/http.post/*/payload
          .
             tax[ip_address]:x:@.arguments/*/ip_address
+
+// Adding metadata
+for-each:x:@.arguments/*/metadata/*
+   set-name:x:./0/-/*/*
+      strings.concat
+         .:metadata[
+         get-name:x:@.dp/#
+         .:]
+   unwrap:x:./0/-/*/*
+   add:x:../*/http.post/*/payload
+      .
+         name:x:@.dp/#
 
 // Retrieving token to use for invocations towards Stripe.
 .token
