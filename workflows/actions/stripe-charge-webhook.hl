@@ -44,6 +44,10 @@
       type:string
       mandatory:bool:true
       default:":x:@.arguments/*/type"
+   metadata
+      type:string
+      mandatory:bool:false
+      default:":x:@.arguments/*/data/*/object/*/metadata/*"
 .icon:payment
 
 // Converting amount to decimal and dividing by 100.
@@ -59,3 +63,4 @@ yield
    currency:x:@.arguments/*/currency
    receipt_url:x:@.arguments/*/receipt_url
    type:x:@.arguments/*/type
+   metadata:x:@.arguments/*/metadata/*
