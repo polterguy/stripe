@@ -6,13 +6,13 @@
  * with the Stripe API.
  */
 .arguments
-   payment_intent_id
+   payment_id
       type:string
       mandatory:bool:true
 .icon:payment
 
 // Sanity checking invocation.
-validators.mandatory:x:@.arguments/*/payment_intent_id
+validators.mandatory:x:@.arguments/*/payment_id
 
 // Adding metadata.
 for-each:x:@.arguments/*/metadata/*
@@ -40,7 +40,7 @@ http.post:"https://api.stripe.com/v1/refunds"
       Content-Type:application/x-www-form-urlencoded
    convert:true
    payload
-      payment_intent:x:@.arguments/*/payment_intent_id
+      payment_intent:x:@.arguments/*/payment_id
 
 // Sanity checking above invocation.
 if

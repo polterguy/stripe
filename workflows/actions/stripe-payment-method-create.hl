@@ -1,7 +1,7 @@
 
 /*
- * Creates a new Stripe payment method with the given [card_number], [card_exp_month],
- * [card_exp_year] and [card_cvs] and attaches the payment metho to the specified
+ * Creates a new Stripe payment method with the given [card_no], [exp_month],
+ * [exp_year] and [cvs] and attaches the payment metho to the specified
  * [customer_id] object.
  *
  * Will use your Stripe API token found from your settings as it's interacting
@@ -11,26 +11,26 @@
    customer_id
       type:string
       mandatory:bool:true
-   card_number
+   card_no
       type:string
       mandatory:bool:true
-   card_exp_year
+   exp_year
       type:int
       mandatory:bool:true
-   card_exp_month
+   exp_month
       type:int
       mandatory:bool:true
-   card_cvs
+   cvs
       type:int
       mandatory:bool:true
 .icon:payment
 
 // Sanity checking invocation.
 validators.mandatory:x:@.arguments/*/customer_id
-validators.mandatory:x:@.arguments/*/card_number
-validators.mandatory:x:@.arguments/*/card_exp_month
-validators.mandatory:x:@.arguments/*/card_exp_year
-validators.mandatory:x:@.arguments/*/card_cvs
+validators.mandatory:x:@.arguments/*/card_no
+validators.mandatory:x:@.arguments/*/exp_month
+validators.mandatory:x:@.arguments/*/exp_year
+validators.mandatory:x:@.arguments/*/cvs
 
 // Retrieving token to use for invocations towards Stripe.
 .token
@@ -45,10 +45,10 @@ http.post:"https://api.stripe.com/v1/payment_methods"
       Content-Type:application/x-www-form-urlencoded
       Authorization:x:@.token
    payload
-      card[number]:x:@.arguments/*/card_number
-      card[exp_month]:x:@.arguments/*/card_exp_month
-      card[exp_year]:x:@.arguments/*/card_exp_year
-      card[cvc]:x:@.arguments/*/card_cvs
+      card[number]:x:@.arguments/*/card_no
+      card[exp_month]:x:@.arguments/*/exp_month
+      card[exp_year]:x:@.arguments/*/exp_year
+      card[cvc]:x:@.arguments/*/cvs
       type:card
    convert:true
 

@@ -21,7 +21,7 @@ custom logic.
 You'll need one configuration setting, being your Stripe API token. This will typically
 look like follows in your configuration.
 
-```
+```json
 {
   "magic": {
     "stripe": {

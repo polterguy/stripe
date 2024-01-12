@@ -99,11 +99,11 @@ if
       // Charge was NOT successful, and probably needs 3D secure
       yield
          finished:bool:false
-         id:x:@http.post/*/content/*/id
-         product:x:@http.post/*/content/*/items/*/data/0/*/price/*/product
+         subscription_id:x:@http.post/*/content/*/id
+         product_id:x:@http.post/*/content/*/items/*/data/0/*/price/*/product
 
 // Returning customer ID to caller.
 yield
    finished:bool:true
-   id:x:@http.post/*/content/*/id
-   product:x:@http.post/*/content/*/items/*/data/0/*/price/*/product
+   subscription_id:x:@http.post/*/content/*/id
+   product_id:x:@http.post/*/content/*/items/*/data/0/*/price/*/product

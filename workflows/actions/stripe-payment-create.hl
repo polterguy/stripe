@@ -19,6 +19,7 @@
    currency
       type:string
       mandatory:bool:true
+      default:usd
    description
       type:string
       mandatory:bool:false
@@ -108,4 +109,4 @@ if
 // Returning customer ID to caller.
 yield
    finished:bool:true
-   id:x:@http.post/*/content/*/id
+   payment_id:x:@http.post/*/content/*/id
