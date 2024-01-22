@@ -32,7 +32,7 @@
 
 // Converting amount to decimal and dividing by 100.
 math.divide
-   convert:x:@.arguments/*/amount
+   convert:x:@.arguments/*/node_reference/#/*/amount
       type:decimal
    .:decimal:100
 
