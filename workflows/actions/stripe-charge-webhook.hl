@@ -3,9 +3,8 @@
  * Charge POST webhook helper action, allowing you to embed into a Stripe webhook,
  * to extract its most important information.
  *
- * DO NOT change the default expressions that already have values since the validation
- * logic depends upon these retrieving these from the [.arguments] collection that's
- * provided by Stripe as it invokes our webhook.
+ * DO NOT change the default expression for the [node_reference] argument since these
+ * are arguments forwarded by Stripe the action depends upon to function.
  *
  * Notice, the [type] returned from this action will have one of these values.
  *
@@ -32,15 +31,15 @@
 
 // Converting amount to decimal and dividing by 100.
 math.divide
-   convert:x:@.arguments/*/node_reference/#/*/amount
+   convert:x:@.arguments/*/node_reference/#/*/data/*/object/*/amount
       type:decimal
    .:decimal:100
 
 // Returning result to caller.
 yield
-   customer_id:x:@.arguments/*/node_reference/#/*/customer_id
+   customer_id:x:@.arguments/*/node_reference/#/*/data/*/object/*/customer
    amount:x:@math.divide
-   currency:x:@.arguments/*/node_reference/#/*/currency
-   receipt_url:x:@.arguments/*/node_reference/#/*/receipt_url
+   currency:x:@.arguments/*/node_reference/#/*/data/*/object/*/currency
+   receipt_url:x:@.arguments/*/node_reference/#/*/data/*/object/*/receipt_url
    type:x:@.arguments/*/node_reference/#/*/type
-   metadata:x:@.arguments/*/node_reference/#/*/metadata/*
+   metadata:x:@.arguments/*/node_reference/#/*/data/*/object/*/metadata/*
