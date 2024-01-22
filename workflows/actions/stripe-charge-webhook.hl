@@ -24,30 +24,10 @@
  * - charge.refund.updated
  */
 .arguments
-   customer_id
+   node_reference
       type:string
       mandatory:bool:true
-      default:":x:@.arguments/*/data/*/object/*/customer"
-   amount
-      type:string
-      mandatory:bool:true
-      default:":x:@.arguments/*/data/*/object/*/amount"
-   currency
-      type:string
-      mandatory:bool:true
-      default:":x:@.arguments/*/data/*/object/*/currency"
-   receipt_url
-      type:string
-      mandatory:bool:true
-      default:":x:@.arguments/*/data/*/object/*/receipt_url"
-   type
-      type:string
-      mandatory:bool:true
-      default:":x:@.arguments/*/type"
-   metadata
-      type:string
-      mandatory:bool:false
-      default:":x:@.arguments/*/data/*/object/*/metadata/*"
+      default:":x:@.arguments"
 .icon:payment
 
 // Converting amount to decimal and dividing by 100.
@@ -58,9 +38,9 @@ math.divide
 
 // Returning result to caller.
 yield
-   customer_id:x:@.arguments/*/customer_id
+   customer_id:x:@.arguments/*/node_reference/#/*/customer_id
    amount:x:@math.divide
-   currency:x:@.arguments/*/currency
-   receipt_url:x:@.arguments/*/receipt_url
-   type:x:@.arguments/*/type
-   metadata:x:@.arguments/*/metadata/*
+   currency:x:@.arguments/*/node_reference/#/*/currency
+   receipt_url:x:@.arguments/*/node_reference/#/*/receipt_url
+   type:x:@.arguments/*/node_reference/#/*/type
+   metadata:x:@.arguments/*/node_reference/#/*/metadata/*
