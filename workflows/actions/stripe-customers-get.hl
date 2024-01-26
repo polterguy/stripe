@@ -9,10 +9,10 @@
    limit
       type:int
       mandatory:bool:false
-   starting_after
+   email
       type:string
       mandatory:bool:false
-   customer_id
+   starting_after
       type:string
       mandatory:bool:false
 .icon:payment
@@ -28,13 +28,6 @@ set-value:x:-
       .:"Bearer "
       config.get:"magic:stripe:token"
 
-// Changing [customer_id] to [customer] if existing.
-if
-   exists:x:@.arguments/*/customer_id
-   .lambda
-      set-name:x:@.arguments/*/customer_id
-         .:customer
-
 // Creating URL.
 .url
 for-each:x:@.arguments/*
@@ -45,7 +38,7 @@ for-each:x:@.arguments/*
             null:x:@.url
             .lambda
                set-value:x:@.url
-                  .:"https://api.stripe.com/v1/charges?"
+                  .:"https://api.stripe.com/v1/customers?"
          else
             set-value:x:@.url
                strings.concat
@@ -83,36 +76,32 @@ if
 // Parametrising our [return] invocation.
 for-each:x:@http.get/*/content/*/data/*
 
-   // Only handling paid charges.
-   if:x:@.dp/#/*/paid
+   // Buffer for currently iterated item.
+   .tmp
+      .
+         id:x:@.dp/#/*/id
+         balance:x:@.dp/#/*/balance
+         created:x:@.dp/#/*/created
+         email:x:@.dp/#/*/email
+         name:x:@.dp/#/*/name
+         metadata:x:@.dp/#/*/metadata/*
 
-      // Buffer for currently iterated item.
-      .tmp
-         .
-            id:x:@.dp/#/*/id
-            amount:x:@.dp/#/*/amount
-            currency:x:@.dp/#/*/currency
-            customer:x:@.dp/#/*/customer
-            metadata:x:@.dp/#/*/metadata/*
-            receipt_url:x:@.dp/#/*/receipt_url
-            created:x:@.dp/#/*/created
+   // Forward evaluating all above expressions.
+   unwrap:x:@.tmp/*/*
+      apply-lists:true
 
-      // Forward evaluating all above expressions.
-      unwrap:x:@.tmp/*/*
-         apply-lists:true
+   // Converting amount to decimal and dividing by 100.
+   set-value:x:@.tmp/*/*/balance
+      math.divide
+         convert:x:@.tmp/*/*/balance
+            type:decimal
+         .:int:100
 
-      // Converting amount to decimal and dividing by 100.
-      set-value:x:@.tmp/*/*/amount
-         math.divide
-            convert:x:@.tmp/*/*/amount
-               type:decimal
-            .:int:100
-
-      // Converting Unix time to UTC date.
-      set-value:x:@.tmp/*/*/created
-         date.from-unix:x:@.tmp/*/*/created
-      add:x:../*/return
-         get-nodes:x:@.tmp/*
+   // Converting Unix time to UTC date.
+   set-value:x:@.tmp/*/*/created
+      date.from-unix:x:@.tmp/*/*/created
+   add:x:../*/return
+      get-nodes:x:@.tmp/*
 
 // Returning result of above invocation to caller.
 return
