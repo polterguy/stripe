@@ -1,0 +1,101 @@
+
+/*
+ * Retrieves charges from Stripe.
+ *
+ * Will use your Stripe API token found from your settings as it's interacting
+ * with the Stripe API.
+ */
+.arguments
+   limit
+      type:string
+      mandatory:bool:false
+   starting_after
+      type:string
+      mandatory:bool:false
+.icon:payment
+
+// Applying defaults.
+validators.default:x:@.arguments
+   limit:int:10
+
+// Retrieving token to use for invocations towards Stripe.
+.token
+set-value:x:-
+   strings.concat
+      .:"Bearer "
+      config.get:"magic:stripe:token"
+
+// Creating URL.
+.url
+for-each:x:@.arguments/*
+   if
+      not-null:x:@.dp/#
+      .lambda
+         if
+            null:x:@.url
+            .lambda
+               set-value:x:@.url
+                  .:"https://api.stripe.com/v1/charges?"
+         else
+            set-value:x:@.url
+               strings.concat
+                  get-value:x:@.url
+                  .:&
+         set-value:x:@.url
+            strings.concat
+               get-value:x:@.url
+               get-name:x:@.dp/#
+               .:=
+               get-value:x:@.dp/#      
+
+// Invoking Stripe REST API.
+http.get:x:@.url
+   convert:true
+   headers
+      Authorization:x:@.token
+
+// Sanity checking above invocation.
+if
+   mte
+      get-value:x:@http.get
+      .:int:400
+   .lambda
+
+      // Oops, something went wrong ...!!
+      lambda2hyper:x:@http.post
+      log.error:Something went wrong while invoking Stripe, could not retrieve charges
+         result:x:@lambda2hyper
+         provider:Stripe
+      throw:Something went wrong while invoking Stripe, could not retrieves charges
+         public:true
+         status:500
+
+// Parametrising our [return] invocation.
+for-each:x:@http.get/*/content/*/data/*
+
+   // Buffer for currently iterated item.
+   .tmp
+      .
+         id:x:@.dp/#/*/id
+         amount:x:@.dp/#/*/amount
+         currency:x:@.dp/#/*/currency
+         customer:x:@.dp/#/*/customer
+         metadata:x:@.dp/#/*/metadata/*
+         receipt_url:x:@.dp/#/*/receipt_url
+         paid:x:@.dp/#/*/paid
+         created:x:@.dp/#/*/created
+   unwrap:x:@.tmp/*/*
+      apply-lists:true
+   set-value:x:@.tmp/*/*/amount
+      math.divide
+         convert:x:@.tmp/*/*/amount
+            type:decimal
+         .:int:100
+   set-value:x:@.tmp/*/*/created
+      date.from-unix:x:@.tmp/*/*/created
+   add:x:../*/return
+      get-nodes:x:@.tmp/*
+      
+
+// Returning result of above invocation to caller.
+return
