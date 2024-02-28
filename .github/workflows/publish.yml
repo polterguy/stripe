@@ -14,7 +14,7 @@ jobs:
         uses: vimtor/action-zip@v1
         with:
           files: ./
-          dest: stripe.zip
+          dest: ${{ github.event.repository.name }}.zip
       - name: Publish
         if: success()
         uses: fjogeleit/http-request-action@v1.14.0
@@ -27,4 +27,32 @@ jobs:
             "Authorization": "Bearer ${{ secrets.TOKEN }}"
             }'
           data: '{"folder": "/etc/bazar/"}'
-          files: '{"file": "./stripe.zip"}'
+          files: '{"file": "./${{ github.event.repository.name }}.zip"}'
+      - name: Uploading description
+        if: success()
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: 'https://ainiro.io/magic/system/file-system/file'
+          method: 'PUT'
+          timeout: 50000
+          customHeaders: '{
+            "Content-Type": "multipart/form-data",
+            "Authorization": "Bearer ${{ secrets.TOKEN }}"
+            }'
+          data: '{"folder": "/etc/bazar/"}'
+          files: '{"file": "./README.md"}'
+      - name: Renaming description file
+        if: success()
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: 'https://ainiro.io/magic/system/file-system/rename'
+          method: 'POST'
+          timeout: 50000
+          customHeaders: '{
+            "Content-Type": "application/json",
+            "Authorization": "Bearer ${{ secrets.TOKEN }}"
+            }'
+          data: '{
+            "oldName": "/etc/bazar/README.md",
+            "newName": "${{ github.event.repository.name }}.md"
+            }'
