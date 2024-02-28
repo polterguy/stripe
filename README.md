@@ -1,9 +1,5 @@
 
-# Stripe payments module
-
-This is our primary Stripe integration module, containing several workflow actions, you can orchestrate together
-to create rich workflows. The module doesn't contain any endpoints, only actions, so it's up to you to wire
-things correctly together.
+Primary Stripe integration module.
 
 ## Workflow actions
 
