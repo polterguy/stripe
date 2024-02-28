@@ -1,0 +1,30 @@
+name: Publishing release
+on:
+  push:
+    branches: [ master ]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Remove Git related files files  
+        run: rm -rf .git && rm -rf .github && rm -rf .vscode && rm -rf .gitignore
+      - name: Archive
+        if: success()
+        uses: vimtor/action-zip@v1
+        with:
+          files: ./
+          dest: stripe.zip
+      - name: Publish
+        if: success()
+        uses: fjogeleit/http-request-action@v1.14.0
+        with:
+          url: 'https://ainiro.io/magic/system/file-system/file'
+          method: 'PUT'
+          timeout: 50000
+          customHeaders: '{
+            "Content-Type": "multipart/form-data",
+            "Authorization": "Bearer ${{ secrets.TOKEN }}"
+            }'
+          data: '{"folder": "/etc/bazar/"}'
+          files: '{"file": "./stripe.zip"}'
