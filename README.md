@@ -1,5 +1,6 @@
 
-Primary Stripe integration module.
+Primary Stripe integration module containing a whole range of workflow actions you can use to integrate
+your apps with Stripe.
 
 ## Workflow actions
 
