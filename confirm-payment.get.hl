@@ -21,11 +21,11 @@ cache.set:x:@.arguments/*/session
 /*
  * Finding all slots that handles payments.
  *
- * This will invoke all slots starting out with [magic.payments.accepted.] as their names,
+ * This will invoke all slots starting out with [stripe.subscriptions.accepted.] as their names,
  * and if one of these slots are returning anything, abort the iteration and return whatever
  * that slots returned from its invocation.
  */
-slots.vocabulary:magic.payments.accepted.
+slots.vocabulary:stripe.subscriptions.accepted.
 
 // Looping through each slot returned above and executing it.
 for-each:x:@slots.vocabulary/*

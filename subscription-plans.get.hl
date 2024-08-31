@@ -18,7 +18,7 @@
  */
 
 // Finding all slots declaring subscriptions.
-slots.vocabulary:stripe.get-subscription-plans.
+slots.vocabulary:stripe.subscriptions.plans.
 
 // Looping through each slot returned above and executing it.
 for-each:x:@slots.vocabulary/*
