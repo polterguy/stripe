@@ -1,0 +1,46 @@
+
+/*
+ * Returns any payment subscription plans existing in the system.
+ *
+ * This allows you to create Stripe subscriptions and have the core framework being able to deal with these.
+ *
+ * Notice, to create support for subscriptions in the system, create a slot named for instance
+ * [stripe.get-subscription-plans.XYZ] from where you return subscription plans to the system.
+ *
+ * The return value from such a slot must at least contain the following values;
+ *
+ * - [name] - Being the friendly name of the plan.
+ * - [description] - Being a friendly descriptive text for the plan.
+ * - [price] - Price for subscription
+ * - [currency] - Currency for price
+ * - [period] - Period for subscription being 'month' or 'year'.
+ * - [price_id] - Stripe price ID for some subscription.
+ * - [slot] - Slot name to invoke as subscription is created.
+ */
+
+// Finding all slots declaring subscriptions.
+slots.vocabulary:stripe.get-subscription-plans.
+
+// Looping through each slot returned above and executing it.
+for-each:x:@slots.vocabulary/*
+
+   // Changing slot invocation name.
+   set-value:x:./*/execute
+      get-value:x:@.dp/#
+
+   /*
+    * Executing slot to retrieve supported providers.
+    *
+    * Notice, name of slot (value of node) is dynamically created above.
+    */
+   execute
+
+   // Looping through all providers returned above to return them to client.
+   for-each:x:@execute/*
+
+      // Returning subscription plan to caller.
+      add:x:../*/return
+         get-nodes:x:@.dp/#
+
+// Returning subscription plans to caller.
+return
