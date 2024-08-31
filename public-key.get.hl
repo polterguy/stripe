@@ -1,0 +1,13 @@
+
+/*
+ * Returns the public key.
+ */
+.arguments
+
+// Retrieving public key from configuration.
+config.get:"magic:stripe:public-key"
+
+// Returning key to caller.
+yield
+   key:x:@config.get
+
