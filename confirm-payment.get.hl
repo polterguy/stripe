@@ -1,0 +1,55 @@
+
+/*
+ * Confirms a payment
+ */
+.arguments
+   session:string
+
+// Sanity checking invocation.
+validators.mandatory:x:@.arguments/*/session
+validators.string:x:@.arguments/*/session
+   min:25
+   max:25
+
+// Retrieving cached session.
+cache.get:x:@.arguments/*/session
+hyper2lambda:x:@cache.get
+
+// Removing cache item.
+cache.set:x:@.arguments/*/session
+
+// Finding all slots that handles payments.
+slots.vocabulary:magic.payments.accepted.
+
+// Looping through each slot returned above and executing it.
+for-each:x:@slots.vocabulary/*
+
+   // Changing slot invocation name.
+   set-value:x:./*/execute
+      get-value:x:@.dp/#
+
+   // Parametrising invocation.
+   add:x:./*/execute
+      get-nodes:x:@hyper2lambda/*
+
+   /*
+    * Executing slot to retrieve supported providers.
+    *
+    * Notice, name of slot (value of node) is dynamically created above.
+    */
+   execute
+
+   /*
+    * Checking if this slot returned something, at which point we return immediately
+    * since this implies the payment was handled.
+    */
+   if
+      exists:x:@execute/*
+      .lambda
+
+         // Slot handled payment.
+         return-nodes:x:@execute/*
+
+// Returning success to caller.
+return
+   result:success

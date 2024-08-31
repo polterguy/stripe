@@ -1,0 +1,61 @@
+
+/*
+ * Creates a checkout session for the specified [priceId].
+ */
+.arguments
+   price
+      type:string
+      mandatory:bool:true
+   success_url
+      type:string
+      mandatory:bool:true
+   mode
+      type:string
+      mandatory:bool:true
+
+// Sanity checking invocation.
+validators.mandatory:x:@.arguments/*/price
+validators.mandatory:x:@.arguments/*/success_url
+validators.mandatory:x:@.arguments/*/mode
+validators.enum:x:@.arguments/*/mode
+   .:payment
+   .:subscription
+
+// Retrieving token to use for invocations towards Stripe.
+.token
+set-value:x:-
+   strings.concat
+      .:"Bearer "
+      config.get:"magic:stripe:token"
+
+// Invoking Stripe REST API.
+http.post:"https://api.stripe.com/v1/checkout/sessions"
+   headers
+      Authorization:x:@.token
+      Content-Type:application/x-www-form-urlencoded
+   payload
+      line_items[0][price]:x:@.arguments/*/price
+      line_items[0][quantity]:int:1
+      success_url:x:@.arguments/*/success_url
+      mode:x:@.arguments/*/mode
+   convert:true
+
+// Sanity checking above invocation.
+if
+   mte
+      get-value:x:@http.post
+      .:int:400
+   .lambda
+
+      // Oops, something went wrong ...!!
+      lambda2hyper:x:@http.post
+      log.error:Something went wrong while invoking Stripe, could not create checkout session
+         result:x:@lambda2hyper
+         provider:Stripe
+      throw:Something went wrong while invoking Stripe, could not create checkout session
+         public:true
+         status:500
+
+// Returning result to caller.
+yield
+   session:x:@http.post/*/content/*/id

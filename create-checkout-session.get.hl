@@ -1,0 +1,57 @@
+
+/*
+ * Creates a new checkout session endpoint
+ * 
+ * [price] is a reference to a Stripe price, [success_url] is where to
+ * route user after a successful purchase and [mode] is either 'subscription' or 'payment'.
+ *
+ * Notice, [purchase_url] gets a query parameter concatenated being 'session' such that we
+ * can match the correct payment once the payment has been successfully accepted. To handle
+ * the payment after a successful payment, invoke the 'handle-payment' endpoint from this
+ * URL.
+ */
+.arguments
+   price:string
+   success_url:string
+   mode:string
+
+// Sanity checking invocation.
+validators.mandatory:x:@.arguments/*/mode
+validators.mandatory:x:@.arguments/*/price
+validators.mandatory:x:@.arguments/*/success_url
+validators.enum:x:@.arguments/*/mode
+   .:payment
+   .:subscription
+
+// Creating a unique session and storing in cache such that we can track successful payments.
+crypto.random
+   min:25
+   max:25
+auth.ticket.get
+unwrap:x:+/*
+lambda2hyper
+   user:x:@auth.ticket.get
+   price:x:@.arguments/*/price
+cache.set:x:@crypto.random
+   expiration:3600
+   value:x:@lambda2hyper
+
+// Updating [success_url] and appending session.
+.success-url
+set-value:x:@.success-url
+   strings.concat
+      get-value:x:@.arguments/*/success_url
+      .:?session=
+      get-value:x:@crypto.random
+
+// Creates a checkout session for the specified [priceId].
+execute:magic.workflows.actions.execute
+   name:stripe-create-checkout-session
+   filename:/modules/stripe/workflows/actions/stripe-create-checkout-session.hl
+   arguments
+      price:x:@.arguments/*/price
+      success_url:x:@.success-url
+      mode:x:@.arguments/*/mode
+
+// Returning result to caller.
+yield:x:@execute/*
