@@ -23,7 +23,13 @@ validators.enum:x:@.arguments/*/mode
    .:payment
    .:subscription
 
-// Creating a unique session and storing in cache such that we can track successful payments.
+/*
+ * Creating a unique session and storing in cache such that we can track successful payments.
+ *
+ * This will contain username and price reference, and be stored with a key being the session ID,
+ * allowing us to later when Stripe invokes our callback to find the username and Stripe price reference
+ * from the QUERY parameter Stripe sends into our callback success URL.
+ */
 crypto.random
    min:25
    max:25

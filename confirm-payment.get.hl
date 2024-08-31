@@ -18,7 +18,13 @@ hyper2lambda:x:@cache.get
 // Removing cache item.
 cache.set:x:@.arguments/*/session
 
-// Finding all slots that handles payments.
+/*
+ * Finding all slots that handles payments.
+ *
+ * This will invoke all slots starting out with [magic.payments.accepted.] as their names,
+ * and if one of these slots are returning anything, abort the iteration and return whatever
+ * that slots returned from its invocation.
+ */
 slots.vocabulary:magic.payments.accepted.
 
 // Looping through each slot returned above and executing it.

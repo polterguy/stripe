@@ -15,7 +15,6 @@
  * - [currency] - Currency for price
  * - [period] - Period for subscription being 'month' or 'year'.
  * - [price_id] - Stripe price ID for some subscription.
- * - [slot] - Slot name to invoke as subscription is created.
  */
 
 // Finding all slots declaring subscriptions.
