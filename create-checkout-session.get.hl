@@ -3,9 +3,12 @@
  * Creates a new checkout session endpoint
  * 
  * [price] is a reference to a Stripe price, [success_url] is where to
- * route user after a successful purchase and [mode] is either 'subscription' or 'payment'.
+ * route user after a successful purchase, and [mode] is either 'subscription' or 'payment'.
  *
- * Notice, [purchase_url] gets a query parameter concatenated being 'session' such that we
+ * The endpoints requires authentication, and will create a new user in Stripe using
+ * the username as email address, assuming the username is an actual valid email address.
+ *
+ * Notice, [success_url] gets a query parameter concatenated being 'session' such that we
  * can match the correct payment once the payment has been successfully accepted. To handle
  * the payment after a successful payment, invoke the 'handle-payment' endpoint from this
  * URL.
@@ -14,6 +17,9 @@
    price:string
    success_url:string
    mode:string
+
+// Making sure user is authenticated.
+auth.ticket.verify
 
 // Sanity checking invocation.
 validators.mandatory:x:@.arguments/*/mode
