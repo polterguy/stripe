@@ -32,13 +32,68 @@ set-value:x:-
       .:"Bearer "
       config.get:"magic:stripe:token"
 
-// Invoking Stripe REST API.
+// Checking is customer already exists in Stripe, at which point we reuse the same customer.
+.url
+strings.concat
+   .:"email:'"
+   get-value:x:@.arguments/*/username
+   .:"'"
+strings.url-encode:x:@strings.concat
+set-value:x:@.url
+   strings.concat
+      .:"https://api.stripe.com/v1/customers/search?query="
+      get-value:x:@strings.url-encode
+
+// Invoking Stripe REST API to retrieve customers with the specified email, if any.
+http.get:x:@.url
+   headers
+      Authorization:x:@.token
+   convert:true
+
+// Sanity checking above invocation.
+if
+   mte
+      get-value:x:@http.get
+      .:int:400
+   .lambda
+
+      // Oops, something went wrong ...!!
+      lambda2hyper:x:@http.post
+      log.error:Something went wrong while invoking Stripe, could not list customers
+         result:x:@lambda2hyper
+         provider:Stripe
+      throw:Something went wrong while invoking Stripe, could not list customers
+         public:true
+         status:500
+
+/*
+ * Checking if we've got an existing customer, at which point we reuse this customer
+ * instead of creating a new one.
+ */
+if
+   exists:x:@http.get/*/content/*/data/0/*/id
+   .lambda
+
+      // We already have this customer in our Stripe account.
+      unwrap:x:+/*/*
+      add:x:../*/http.post/*/payload
+         .
+            customer:x:@http.get/*/content/*/data/*/*/id
+else
+
+   // No existing customer in Stripe matching this email address.
+   unwrap:x:+/*/*
+   add:x:../*/http.post/*/payload
+      .
+         customer_email:x:@.arguments/*/username
+         client_reference_id:x:@.arguments/*/username
+
+// Invoking Stripe REST API to create a checkout session.
 http.post:"https://api.stripe.com/v1/checkout/sessions"
    headers
       Authorization:x:@.token
       Content-Type:application/x-www-form-urlencoded
    payload
-      customer_email:x:@.arguments/*/username
       line_items[0][price]:x:@.arguments/*/price
       line_items[0][quantity]:int:1
       success_url:x:@.arguments/*/success_url
