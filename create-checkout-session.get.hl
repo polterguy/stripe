@@ -55,6 +55,7 @@ execute:magic.workflows.actions.execute
    name:stripe-create-checkout-session
    filename:/modules/stripe/workflows/actions/stripe-create-checkout-session.hl
    arguments
+      username:x:@auth.ticket.get
       price:x:@.arguments/*/price
       success_url:x:@.success-url
       mode:x:@.arguments/*/mode

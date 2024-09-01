@@ -3,6 +3,9 @@
  * Creates a checkout session for the specified [priceId].
  */
 .arguments
+   username
+      type:string
+      mandatory:bool:true
    price
       type:string
       mandatory:bool:true
@@ -14,6 +17,7 @@
       mandatory:bool:true
 
 // Sanity checking invocation.
+validators.mandatory:x:@.arguments/*/username
 validators.mandatory:x:@.arguments/*/price
 validators.mandatory:x:@.arguments/*/success_url
 validators.mandatory:x:@.arguments/*/mode
@@ -34,6 +38,7 @@ http.post:"https://api.stripe.com/v1/checkout/sessions"
       Authorization:x:@.token
       Content-Type:application/x-www-form-urlencoded
    payload
+      customer_email:x:@.arguments/*/username
       line_items[0][price]:x:@.arguments/*/price
       line_items[0][quantity]:int:1
       success_url:x:@.arguments/*/success_url
