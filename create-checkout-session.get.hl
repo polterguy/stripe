@@ -24,23 +24,23 @@ validators.enum:x:@.arguments/*/mode
    .:subscription
 
 /*
- * Creating a unique session and storing in cache such that we can track successful payments.
+ * Creating a unique session and storing in database such that we can track successful payments.
  *
  * This will contain username and price reference, and be stored with a key being the session ID,
- * allowing us to later when Stripe invokes our callback to find the username and Stripe price reference
- * from the QUERY parameter Stripe sends into our callback success URL.
+ * allowing us to find the username and Stripe price reference from the QUERY parameter Stripe sends
+ * into our success URL callback.
  */
 crypto.random
    min:25
    max:25
 auth.ticket.get
-unwrap:x:+/*
-lambda2hyper
-   user:x:@auth.ticket.get
-   price:x:@.arguments/*/price
-cache.set:x:@crypto.random
-   expiration:3600
-   value:x:@lambda2hyper
+data.connect:stripe
+   data.create
+      table:checkout_sessions
+      values
+         session_id:x:@crypto.random
+         username:x:@auth.ticket.get
+         price:x:@.arguments/*/price
 
 // Updating [success_url] and appending session.
 .success-url

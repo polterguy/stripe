@@ -11,12 +11,24 @@ validators.string:x:@.arguments/*/session
    min:25
    max:25
 
-// Retrieving cached session.
-cache.get:x:@.arguments/*/session
-hyper2lambda:x:@cache.get
-
-// Removing cache item.
-cache.set:x:@.arguments/*/session
+// Retrieving stored session.
+.session
+data.connect:stripe
+   data.read
+      table:checkout_sessions
+      values
+         username
+         price
+      where
+         and
+            session_id.eq:x:@.arguments/*/session
+   add:x:@.session
+      get-nodes:x:@data.read/*/*
+   data.delete
+      table:checkout_sessions
+      where
+         and
+            session_id.eq:x:@.arguments/*/session
 
 /*
  * Finding all slots that handles payments.
@@ -36,7 +48,7 @@ for-each:x:@slots.vocabulary/*
 
    // Parametrising invocation.
    add:x:./*/execute
-      get-nodes:x:@hyper2lambda/*
+      get-nodes:x:@.session/*
 
    /*
     * Executing slot to retrieve supported providers.
