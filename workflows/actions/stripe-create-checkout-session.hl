@@ -32,7 +32,12 @@ set-value:x:-
       .:"Bearer "
       config.get:"magic:stripe:token"
 
-// Checking is customer already exists in Stripe, at which point we reuse the same customer.
+/*
+ * Checking is customer already exists in Stripe, at which point we reuse the same customer.
+ *
+ * This avoids creating duplicate Stripe customer objects for each time the same user creates a
+ * subscription, and will also reuse existing customer objects created manually in the Stripe dashboard.
+ */
 .url
 strings.concat
    .:"email:'"
@@ -119,3 +124,4 @@ if
 // Returning result to caller.
 yield
    session:x:@http.post/*/content/*/id
+   url:x:@http.post/*/content/*/url
