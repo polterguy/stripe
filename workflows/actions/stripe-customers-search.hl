@@ -2,7 +2,7 @@
 /*
  * Searches for customers from username, which internally in the system is the user's username.
  *
- * Returns all subscriptions belonging to the specified username.
+ * Returns the specified customers, if existing.
  */
 .arguments
    username
@@ -20,7 +20,7 @@ set-value:x:-
       .:"Bearer "
       config.get:"magic:stripe:token"
 
-// Making sure we retrieve only active subscriptions belonging to specified user.
+// Making sure we retrieve only customers with the specified email.
 .url
 strings.concat
    .:"email:'"

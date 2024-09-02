@@ -1,0 +1,77 @@
+
+/*
+ * Cancels the user's active subscriptions
+ */
+
+// Buffer for user's extra information.
+.extra
+
+// Retrieving username.
+auth.ticket.get
+
+/*
+ * Searches for subscriptions belonging to user.
+ *
+ * Returns all subscriptions belonging to the specified user.
+ */
+execute:magic.workflows.actions.execute
+   name:stripe-subscription-search
+   filename:/modules/stripe/workflows/actions/stripe-subscription-search.hl
+   arguments
+      username:x:@auth.ticket.get
+
+// Looping through all subscriptions belonging to user and canceling these.
+for-each:x:@execute/*
+
+   /*
+    * Deletes the existing Stripe subscription for the given [subscription_id].
+    *
+    * Will use your Stripe API token found from your settings as it's interacting
+    * with the Stripe API.
+    */
+   execute:magic.workflows.actions.execute
+      name:stripe-subscription-delete
+      filename:/modules/stripe/workflows/actions/stripe-subscription-delete.hl
+      arguments
+         subscription_id:x:@.dp/#/*/id
+
+// Opening up database connection.
+data.connect:magic
+
+   // Deleting all roles user belongs to except root and guest.
+   data.delete
+      table:users_roles
+      where
+         and
+            user.eq:x:@auth.ticket.get
+            role.neq:guest
+            role.neq:root
+
+   // Retrieving extra information.
+   data.connect:magic
+      data.read
+         table:users_extra
+         where
+            and
+               user.eq:x:@auth.ticket.get
+               or
+                  type.eq:name
+                  type.eq:email
+      for-each:x:@data.read/*
+         set-name:x:./*/add/*/*
+            get-value:x:@.dp/#/*/type
+         set-value:x:./*/add/*/*
+            get-value:x:@.dp/#/*/value
+         add:x:@.extra
+            .
+               .
+
+// Authenticating user again creating a new JWT token since roles have been updated.
+execute:magic.auth.authenticate
+   username:x:@auth.ticket.get
+   password-check:bool:false
+
+// Returning token and extra information to caller.
+yield
+   ticket:x:@execute/*/ticket
+   extra:x:@.extra/*

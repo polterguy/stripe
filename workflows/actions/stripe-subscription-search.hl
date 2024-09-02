@@ -1,0 +1,92 @@
+
+/*
+ * Searches for subscriptions belonging to customer, which internally in the system is the user's username.
+ *
+ * Returns all subscriptions belonging to the specified username.
+ */
+.arguments
+   username
+      type:string
+      mandatory:bool:true
+.icon:payment
+
+// Sanity checking invocation.
+validators.mandatory:x:@.arguments/*/username
+
+// Retrieving token to use for invocations towards Stripe.
+.token
+set-value:x:-
+   strings.concat
+      .:"Bearer "
+      config.get:"magic:stripe:token"
+
+// First we need to find customer from username.
+.url
+strings.concat
+   .:"email:'"
+   get-value:x:@.arguments/*/username
+   .:"'"
+strings.url-encode:x:@strings.concat
+set-value:x:@.url
+   strings.concat
+      .:"https://api.stripe.com/v1/customers/search?query="
+      get-value:x:@strings.url-encode
+
+// Invoking Stripe REST API to retrieve customer.
+http.get:x:@.url
+   headers
+      Authorization:x:@.token
+   convert:true
+
+// Sanity checking above invocation.
+if
+   mte
+      get-value:x:@http.post
+      .:int:400
+   .lambda
+
+      // Oops, something went wrong ...!!
+      lambda2hyper:x:@http.post
+      log.error:Something went wrong while invoking Stripe API to create subscription
+         result:x:@lambda2hyper
+         provider:Stripe
+      throw:Something went wrong while invoking Stripe API to create subscription
+         public:true
+         status:500
+
+// Creating our URL.
+set-value:x:@.url
+   strings.concat
+      .:"https://api.stripe.com/v1/subscriptions?customer="
+      strings.url-encode:x:@http.get/*/content/*/data/0/*/id
+
+// Invoking Stripe API.
+http.get:x:@.url
+   headers
+      Authorization:x:@.token
+   convert:true
+
+// Sanity checking above invocation.
+if
+   mte
+      get-value:x:@http.post
+      .:int:400
+   .lambda
+
+      // Oops, something went wrong ...!!
+      lambda2hyper:x:@http.post
+      log.error:Something went wrong while invoking Stripe API to create subscription
+         result:x:@lambda2hyper
+         provider:Stripe
+      throw:Something went wrong while invoking Stripe API to create subscription
+         public:true
+         status:500
+
+// Returning result to caller.
+for-each:x:@http.get/*/content/*/data/*
+   unwrap:x:+/*/*/*
+   add:x:../*/return
+      .
+         .
+            id:x:@.dp/#/*/id
+return
