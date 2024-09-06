@@ -83,7 +83,7 @@ if
       unwrap:x:+/*/*
       add:x:../*/http.post/*/payload
          .
-            customer:x:@http.get/*/content/*/data/*/*/id
+            customer:x:@http.get/*/content/*/data/0/*/id
 else
 
    // No existing customer in Stripe matching this email address.
