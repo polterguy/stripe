@@ -29,11 +29,14 @@ for-each:x:@execute/*
     * Will use your Stripe API token found from your settings as it's interacting
     * with the Stripe API.
     */
-   execute:magic.workflows.actions.execute
-      name:stripe-subscription-delete
-      filename:/modules/stripe/workflows/actions/stripe-subscription-delete.hl
-      arguments
-         subscription_id:x:@.dp/#/*/id
+   try
+      execute:magic.workflows.actions.execute
+         name:stripe-subscription-delete
+         filename:/modules/stripe/workflows/actions/stripe-subscription-delete.hl
+         arguments
+            subscription_id:x:@.dp/#/*/id
+   .catch
+      log.error:x:@.arguments/*/message
 
 // Opening up database connection.
 data.connect:magic

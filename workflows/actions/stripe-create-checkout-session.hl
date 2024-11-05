@@ -83,7 +83,7 @@ if
       unwrap:x:+/*/*
       add:x:../*/http.post/*/payload
          .
-            customer:x:@http.get/*/content/*/data/0/*/id
+            customer:x:@http.get/*/content/*/data/*/*/id
 else
 
    // No existing customer in Stripe matching this email address.
@@ -101,6 +101,7 @@ http.post:"https://api.stripe.com/v1/checkout/sessions"
    payload
       line_items[0][price]:x:@.arguments/*/price
       line_items[0][quantity]:int:1
+      automatic_tax[enabled]:bool:true
       success_url:x:@.arguments/*/success_url
       mode:x:@.arguments/*/mode
    convert:true
