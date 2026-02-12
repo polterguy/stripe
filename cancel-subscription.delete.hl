@@ -1,6 +1,6 @@
 
 /*
- * Cancels the user's active subscriptions
+ * Cancels the user's active subscriptions.
  */
 
 // Buffer for user's extra information.
