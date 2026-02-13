@@ -7,15 +7,15 @@ your apps with Stripe.
 This module contains the following Stripe related workflow actions you can chain together to create your own
 custom logic.
 
-* stripe-charge-webhook - Webhook action making it easy to create Stripe webhooks to accept callback from Stripe
-* stripe-charges-get - Returns latest charges, optionally for a specific customer
-* stripe-customer-create - Creates a new customer in Stripe
-* stripe-payment-create - Creates a new payment for the specified amount
-* stripe-payment-link-create - Creates a purchase link and returns to caller
-* stripe-payment-method-create - Creates a new payment method and associates with some customer
-* stripe-refund-create - Refunds the specified payment
-* stripe-subscription-create - Creates a new subscription based upon a price reference
-* stripe-subscription-delete - Deletes the specified subscription
+* stripe-charge-webhook - Webhook action making it easy to create Stripe webhooks to accept callback from Stripe.
+* stripe-charges-get - Returns latest charges, optionally for a specific customer.
+* stripe-customer-create - Creates a new customer in Stripe.
+* stripe-payment-create - Creates a new payment for the specified amount.
+* stripe-payment-link-create - Creates a purchase link and returns to caller.
+* stripe-payment-method-create - Creates a new payment method and associates with some customer.
+* stripe-refund-create - Refunds the specified payment.
+* stripe-subscription-create - Creates a new subscription based upon a price reference.
+* stripe-subscription-delete - Deletes the specified subscription.
 
 ## Configuration
 
